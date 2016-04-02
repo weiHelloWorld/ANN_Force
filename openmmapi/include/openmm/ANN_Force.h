@@ -27,9 +27,13 @@
 
 #include "openmm/Force.h"
 #include "openmm/Vec3.h"
+#include "openmm/OpenMMException.h"
 #include <map>
 #include <vector>
 #include <string>
+
+using std::string;
+using std::vector;
 
 #define NUM_OF_LAYERS 3  
 // this is the number of layers associated with mapping from data in original space to 
@@ -44,25 +48,19 @@ namespace OpenMM {
 class ANN_Force : public Force {
 
 public:
-
-
     ANN_Force();
-    ~ANN_Force() {};
     
-    const std::vector<int>& get_num_of_nodes() {
-        return num_of_nodes;
-    }
+    const vector<int>& get_num_of_nodes();
 
-    void set_num_of_nodes(int num[NUM_OF_LAYERS]) {
-        for(int i = 0; i < NUM_OF_LAYERS; i ++) {
-            num_of_nodes[i] = num[i];
-        }
-        return;
-    }
+    void set_num_of_nodes(int num[NUM_OF_LAYERS]);
 
-    // TODO: getters, setters for coefficients of connections between layers
-    // TODO: getters, setters for layer_types
+    const vector<vector<double> >& get_coeffients_of_connections();
+    
+    void set_coeffients_of_connections(vector<vector<double> > coefficients);
 
+    const vector<string>& get_layer_types();
+
+    void set_layer_types(vector<string>  temp_layer_types);
 
 
     /**
@@ -81,16 +79,16 @@ public:
      *
      * @returns true if nonbondedMethod uses PBC and false otherwise
      */
-    // bool usesPeriodicBoundaryConditions() const {
-    //     return false;
-    // }
+    bool usesPeriodicBoundaryConditions() const {
+        return false;
+    }
 protected:
     // double _globalQuarticK, _globalCubicK;
     ForceImpl* createImpl() const;
 private:
-    std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
-    std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
-    std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS);
+    vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
+    vector<vector<double> > coeff = vector<vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
+    vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
 };
 
 
