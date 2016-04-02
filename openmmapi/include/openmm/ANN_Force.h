@@ -31,8 +31,9 @@
 #include <vector>
 #include <string>
 
-#define NUM_OF_LAYERS 3  // this is the number of layers associated with mapping from data in original space to 
-                         // principal component space.  If the value is 3, the corresponding ANN network is 5-layer.
+#define NUM_OF_LAYERS 3  
+// this is the number of layers associated with mapping from data in original space to 
+// principal component space.  If the value is 3, the corresponding ANN network is 5-layer.
 
 namespace OpenMM {
 
@@ -87,9 +88,9 @@ protected:
     // double _globalQuarticK, _globalCubicK;
     ForceImpl* createImpl() const;
 private:
-    std::vector<int> num_of_nodes(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
-    std::vector<std::vector<RealOpenMM> > coeff(NUM_OF_LAYERS - 1);
-    std::vector<string> layer_types(NUM_OF_LAYERS);
+    std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
+    std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
+    std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS);
 };
 
 
