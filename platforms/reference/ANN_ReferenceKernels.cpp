@@ -2,7 +2,7 @@
 #include "openmm/internal/ANN_ForceImpl.h"
 #include "ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
-
+#include "../../openmmapi/src/ANN_Force.cpp"
 
 #include <cmath>
 #ifdef _MSC_VER

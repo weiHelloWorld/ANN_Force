@@ -1,6 +1,7 @@
 #include "openmm/Force.h"
 #include "openmm/OpenMMException.h"
 #include "../include/OpenMM_ANN.h"
+#include "ANN_ForceImpl.cpp"
 
 using namespace OpenMM;
 using std::string;

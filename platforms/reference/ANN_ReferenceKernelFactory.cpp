@@ -4,13 +4,19 @@
 #include "ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
+#include "ANN_ReferenceKernels.cpp"
 
 using namespace OpenMM;
+using std::cout;
+using std::endl;
 
 extern "C" OPENMM_EXPORT void registerPlatforms() {
 }
 
 extern "C" OPENMM_EXPORT void registerKernelFactories() {
+    // FIXME: seems that this function is not called
+    cout << "platform number = " << Platform::getNumPlatforms() << endl;  
+
     for (int i = 0; i < Platform::getNumPlatforms(); i++) {
         Platform& platform = Platform::getPlatform(i);
         if (dynamic_cast<ReferencePlatform*>(&platform) != NULL) {

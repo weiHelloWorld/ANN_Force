@@ -27,6 +27,7 @@
 
 #include "openmm/internal/ForceImpl.h"
 #include "openmm/Kernel.h"
+#include "OpenMM_ANN.h"
 #include <utility>
 #include <set>
 #include <vector>

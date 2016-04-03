@@ -1,5 +1,4 @@
 #include "openmm/internal/ContextImpl.h"
-#include "../include/OpenMM_ANN.h"
 #include "openmm/Platform.h"
 
 using namespace OpenMM;
