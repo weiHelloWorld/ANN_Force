@@ -1,13 +1,13 @@
 #ifndef ANN_OPENMM_REFERENCE_KERNELS_H_
 #define ANN_OPENMM_REFERENCE_KERNELS_H_
 
-
+#include "OpenMM_ANN.h"
 #include "openmm/System.h"
 #include "openmm/ANN_Kernels.h"
-#include "openmm/ANN_MultipoleForce.h"
-#include "ANN_ReferenceMultipoleForce.h"
-#include "ReferenceNeighborList.h"
+#include "RealVec.h"
+
 #include "SimTKOpenMMRealType.h"
+
 
 namespace OpenMM {
 
@@ -43,15 +43,22 @@ public:
      * @param force      the ANN_Force to copy the parameters from
      */
     void copyParametersToContext(ContextImpl& context, const ANN_Force& force);
+
+    /**
+     * Calculate force and energy
+     *
+     * @param positionData    the coordinates of all atoms
+     * @param forceData      calculated force values based on the positions
+     * @return          the energy associated with this force
+     */
+    RealOpenMM calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData);
+
 private:
-    int nums;
-    std::vector<int>   particle1;
-    std::vector<int>   particle2;
-    std::vector<RealOpenMM> length;
-    std::vector<RealOpenMM> kQuadratic;
-    RealOpenMM globalCubic;
-    RealOpenMM globalQuartic;
-    const System& system;
+    vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
+    vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
+    vector<vector<double> > coeff = vector<vector<double> >(NUM_OF_LAYERS - 1);  
+    vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
+    const System& system;  // why do I need this?
 };
 
 

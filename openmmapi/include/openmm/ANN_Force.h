@@ -53,19 +53,19 @@ public:
     ANN_Force() {};
     ~ANN_Force() {};
     
-    const vector<int>& get_num_of_nodes();
+    const vector<int>& get_num_of_nodes() const;
 
     void set_num_of_nodes(int num[NUM_OF_LAYERS]);
 
-    const vector<int>& get_index_of_backbone_atoms();
+    const vector<int>& get_index_of_backbone_atoms() const;
 
     void set_index_of_backbone_atoms(int indices[NUM_OF_BACKBONE_ATOMS]);
 
-    const vector<vector<double> >& get_coeffients_of_connections();
+    const vector<vector<double> >& get_coeffients_of_connections() const;
     
     void set_coeffients_of_connections(vector<vector<double> > coefficients);
 
-    const vector<string>& get_layer_types();
+    const vector<string>& get_layer_types() const;
 
     void set_layer_types(vector<string>  temp_layer_types);
 

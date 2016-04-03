@@ -7,7 +7,7 @@ using std::string;
 using std::vector;
 
 
-const vector<int>& ANN_Force::get_num_of_nodes() {
+const vector<int>& ANN_Force::get_num_of_nodes() const {
     return num_of_nodes;
 }
 
@@ -18,7 +18,7 @@ void ANN_Force::set_num_of_nodes(int num[NUM_OF_LAYERS]) {
     return;
 }
 
-const vector<int>& ANN_Force::get_index_of_backbone_atoms(){
+const vector<int>& ANN_Force::get_index_of_backbone_atoms()const {
 	return index_of_backbone_atoms;
 }
 
@@ -29,7 +29,7 @@ void ANN_Force::set_index_of_backbone_atoms(int indices[NUM_OF_BACKBONE_ATOMS]){
 	return;
 }
 
-const vector<vector<double> >& ANN_Force::get_coeffients_of_connections() {
+const vector<vector<double> >& ANN_Force::get_coeffients_of_connections() const {
     return coeff;
 }
 
@@ -39,7 +39,7 @@ void ANN_Force::set_coeffients_of_connections(vector<vector<double> > coefficien
 }
 
 
-const vector<string>& ANN_Force::get_layer_types() {
+const vector<string>& ANN_Force::get_layer_types() const {
     return layer_types;
 }
 
