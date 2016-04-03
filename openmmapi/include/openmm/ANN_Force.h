@@ -39,6 +39,8 @@ using std::vector;
 // this is the number of layers associated with mapping from data in original space to 
 // principal component space.  If the value is 3, the corresponding ANN network is 5-layer.
 
+#define NUM_OF_BACKBONE_ATOMS 60
+
 namespace OpenMM {
 
 /**
@@ -48,11 +50,16 @@ namespace OpenMM {
 class ANN_Force : public Force {
 
 public:
-    ANN_Force();
+    ANN_Force() {};
+    ~ANN_Force() {};
     
     const vector<int>& get_num_of_nodes();
 
     void set_num_of_nodes(int num[NUM_OF_LAYERS]);
+
+    const vector<int>& get_index_of_backbone_atoms();
+
+    void set_index_of_backbone_atoms(int indices[NUM_OF_BACKBONE_ATOMS]);
 
     const vector<vector<double> >& get_coeffients_of_connections();
     
@@ -87,6 +94,7 @@ protected:
     ForceImpl* createImpl() const;
 private:
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
+    vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
     vector<vector<double> > coeff = vector<vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
     vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
 };
