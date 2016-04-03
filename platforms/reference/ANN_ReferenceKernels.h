@@ -53,12 +53,17 @@ public:
      */
     RealOpenMM calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData);
 
+    void get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData, vector<RealOpenMM>& cos_sin_value);
+
+    void get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
+                                const vector<RealVec>& positionData, RealOpenMM cos_value, RealOpenMM sin_value);
+
 private:
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
     vector<vector<double> > coeff = vector<vector<double> >(NUM_OF_LAYERS - 1);  
     vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
-    const System& system;  // why do I need this?
+    const System& system;  
 };
 
 

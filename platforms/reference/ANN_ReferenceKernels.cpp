@@ -82,8 +82,45 @@ void ReferenceCalcANN_ForceKernel::copyParametersToContext(ContextImpl& context,
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case: add force on first atom, fix it at (0,0,0)
     RealOpenMM coef = 100.0;
-    forceData[0][0]    -= coef * (positionData[0][0] - 0.1);
-    forceData[0][1]    -= coef * (positionData[0][1] - 0.2);
-    forceData[0][2]    -= coef * positionData[0][2];
+    forceData[0][0]    += - coef * (positionData[0][0] - 0.1);
+    forceData[0][1]    += - coef * (positionData[0][1] - 0.2);
+    forceData[0][2]    += - coef * positionData[0][2];
     return 0;  // TODO: fix this later
+}
+
+
+
+void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData,
+                                                                            vector<RealOpenMM>& cos_sin_value) {
+    assert (index_of_backbone_atoms.size() % 3 == 0);
+    RealOpenMM temp_cos, temp_sin;
+    for (int ii = 0; ii < index_of_backbone_atoms.size() / 3; ii ++) {
+        if (ii != 0) {
+            get_cos_and_sin_for_four_atoms(3 * ii - 1, 3 * ii, 3 * ii + 1, 3 * ii + 2, temp_cos, temp_sin);
+            cos_sin_value.push_back(temp_cos);
+            cos_sin_value.push_back(temp_sin);
+        }
+        if (ii != index_of_backbone_atoms.size() / 3 - 1) {
+            get_cos_and_sin_for_four_atoms(3 * ii, 3 * ii + 1, 3 * ii + 2, 3 * ii + 3, temp_cos, temp_sin);
+            cos_sin_value.push_back(temp_cos);
+            cos_sin_value.push_back(temp_sin);
+        }
+    }
+    return;
+}
+
+void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
+                                const vector<RealVec>& positionData, RealOpenMM cos_value, RealOpenMM sin_value) {
+    RealVec diff_1 = positionData[idx_1] - positionData[idx_2];
+    RealVec diff_2 = positionData[idx_2] - positionData[idx_3];
+    RealVec diff_3 = positionData[idx_3] - positionData[idx_4];
+    RealVec normal_1 = diff_1.cross(diff_2);
+    RealVec normal_2 = diff_2.cross(diff_3);
+    normal_1 /= sqrt(normal_1.dot(normal_1));  // normalization
+    normal_2 /= sqrt(normal_2.dot(normal_2));
+    cos_value = normal_1.dot(normal_2);
+    RealVec sin_vec = normal_1.cross(normal_2);
+    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
+    sin_value = sqrt(sin_vec.dot(sin_vec)) * sign;
+    return;
 }

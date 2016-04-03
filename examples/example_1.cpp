@@ -36,7 +36,7 @@ void simulateArgon()
         // nonbond->addParticle(0.0, 0.3350, 0.996); // vdWRad(Ar)=.188 nm
     }
 
-    OpenMM::VerletIntegrator integrator(0.004); // step size in ps
+    OpenMM::VerletIntegrator integrator(0.002); // step size in ps
 
     // Let OpenMM Context choose best platform.
     OpenMM::Context context(system, integrator);
@@ -53,7 +53,7 @@ void simulateArgon()
         const double  timeInPs = state.getTime();
         writePdbFrame(frameNum, state); // output coordinates
 
-        if (timeInPs >= 10.)
+        if (timeInPs >= 20.)
             break;
 
         // Advance state many steps at a time, for efficient use of OpenMM.

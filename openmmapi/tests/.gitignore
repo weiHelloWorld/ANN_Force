@@ -1,4 +1,2 @@
-*
-!*.h
-!*.cpp
-!Makefile
+test_ANN_Force
+test_ANN_package
