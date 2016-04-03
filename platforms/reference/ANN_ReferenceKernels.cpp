@@ -96,12 +96,12 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
     RealOpenMM temp_cos, temp_sin;
     for (int ii = 0; ii < index_of_backbone_atoms.size() / 3; ii ++) {
         if (ii != 0) {
-            get_cos_and_sin_for_four_atoms(3 * ii - 1, 3 * ii, 3 * ii + 1, 3 * ii + 2, temp_cos, temp_sin);
+            get_cos_and_sin_for_four_atoms(3 * ii - 1, 3 * ii, 3 * ii + 1, 3 * ii + 2, positionData, temp_cos, temp_sin);
             cos_sin_value.push_back(temp_cos);
             cos_sin_value.push_back(temp_sin);
         }
         if (ii != index_of_backbone_atoms.size() / 3 - 1) {
-            get_cos_and_sin_for_four_atoms(3 * ii, 3 * ii + 1, 3 * ii + 2, 3 * ii + 3, temp_cos, temp_sin);
+            get_cos_and_sin_for_four_atoms(3 * ii, 3 * ii + 1, 3 * ii + 2, 3 * ii + 3, positionData, temp_cos, temp_sin);
             cos_sin_value.push_back(temp_cos);
             cos_sin_value.push_back(temp_sin);
         }
