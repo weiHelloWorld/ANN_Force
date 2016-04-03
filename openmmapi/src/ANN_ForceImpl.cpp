@@ -1,6 +1,5 @@
 #include "openmm/internal/ContextImpl.h"
-#include "openmm/internal/ANN_ForceImpl.h"
-
+#include "../include/OpenMM_ANN.h"
 #include "openmm/Platform.h"
 
 using namespace OpenMM;

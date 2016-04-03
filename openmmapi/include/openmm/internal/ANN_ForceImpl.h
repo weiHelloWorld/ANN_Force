@@ -26,7 +26,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "openmm/internal/ForceImpl.h"
-#include "openmm/ANN_Force.h"
 #include "openmm/Kernel.h"
 #include <utility>
 #include <set>

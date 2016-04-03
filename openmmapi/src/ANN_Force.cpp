@@ -1,6 +1,6 @@
 #include "openmm/Force.h"
 #include "openmm/OpenMMException.h"
-#include "../include/openmm/ANN_Force.h"
+#include "../include/OpenMM_ANN.h"
 
 using namespace OpenMM;
 using std::string;
@@ -50,10 +50,10 @@ void ANN_Force::set_layer_types(vector<string>  temp_layer_types) {
 
 
 ForceImpl* ANN_Force::createImpl() const {
-    // return new ANN_ForceImpl(*this);
+    return new ANN_ForceImpl(*this);
 }
 
 void ANN_Force::updateParametersInContext(Context& context) {
-    // dynamic_cast<ANN_ForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
+    dynamic_cast<ANN_ForceImpl&>(getImplInContext(context)).updateParametersInContext(getContextImpl(context));
 }
 

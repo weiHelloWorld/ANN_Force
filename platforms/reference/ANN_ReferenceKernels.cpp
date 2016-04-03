@@ -1,16 +1,8 @@
 #include "ANN_ReferenceKernels.h"
-#include "ANN_ReferenceBondForce.h"
-#include "ANN_ReferenceGeneralizedKirkwoodForce.h"
 #include "openmm/internal/ANN_TorsionTorsionForceImpl.h"
-#include "openmm/internal/ANN_WcaDispersionForceImpl.h"
 #include "ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
-#include "openmm/ANN_MultipoleForce.h"
-#include "openmm/internal/ANN_MultipoleForceImpl.h"
-#include "openmm/internal/ANN_VdwForceImpl.h"
-#include "openmm/internal/ANN_GeneralizedKirkwoodForceImpl.h"
 #include "openmm/NonbondedForce.h"
-#include "openmm/internal/NonbondedForceImpl.h"
 
 #include <cmath>
 #ifdef _MSC_VER
