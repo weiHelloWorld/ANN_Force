@@ -59,7 +59,6 @@ double ReferenceCalcANN_ForceKernel::execute(ContextImpl& context, bool includeF
     vector<RealVec>& forceData = extractForces(context);
     RealOpenMM energy      = calculateForceAndEnergy(posData, forceData); 
                                 // the output of force for each atom is stored in forceData
-    // TODO: implement calculation of force (of each atom) and energy here
     return static_cast<double>(energy);
 }
 
@@ -83,8 +82,8 @@ void ReferenceCalcANN_ForceKernel::copyParametersToContext(ContextImpl& context,
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case: add force on first atom, fix it at (0,0,0)
     RealOpenMM coef = 100.0;
-    forceData[0][0]    -= coef * positionData[0][0];
-    forceData[0][1]    -= coef * positionData[0][1];
+    forceData[0][0]    -= coef * (positionData[0][0] - 0.1);
+    forceData[0][1]    -= coef * (positionData[0][1] - 0.2);
     forceData[0][2]    -= coef * positionData[0][2];
     return 0;  // TODO: fix this later
 }
