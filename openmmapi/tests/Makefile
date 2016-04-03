@@ -8,7 +8,7 @@ LIB_DIR=$(OpenMM_INSTALL_DIR)/lib
 INCLUDE_DIR=$(OpenMM_INSTALL_DIR)/include
 LIBS= -lOpenMM
 
-test:
+test:  test_ANN_Force.cpp
 	g++ $(CFLAGS) -I$(INCLUDE_DIR) test_ANN_Force.cpp  -L$(LIB_DIR) $(LIBS) -o test
 
 clean:
