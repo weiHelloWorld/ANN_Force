@@ -15,7 +15,7 @@ extern "C" OPENMM_EXPORT void registerPlatforms() {
 
 extern "C" OPENMM_EXPORT void registerKernelFactories() {
     // FIXME: seems that this function is not called
-    cout << "platform number = " << Platform::getNumPlatforms() << endl;  
+    // cout << "platform number = " << Platform::getNumPlatforms() << endl;  
 
     for (int i = 0; i < Platform::getNumPlatforms(); i++) {
         Platform& platform = Platform::getPlatform(i);

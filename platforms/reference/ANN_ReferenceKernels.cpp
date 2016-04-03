@@ -82,7 +82,7 @@ void ReferenceCalcANN_ForceKernel::copyParametersToContext(ContextImpl& context,
 
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case: add force on first atom, fix it at (0,0,0)
-    double coef = 100.0;
+    RealOpenMM coef = 100.0;
     forceData[0][0]    -= coef * positionData[0][0];
     forceData[0][1]    -= coef * positionData[0][1];
     forceData[0][2]    -= coef * positionData[0][2];
