@@ -32,8 +32,6 @@
 #include <vector>
 #include <string>
 
-using std::string;
-using std::vector;
 
 #define NUM_OF_LAYERS 3  
 // this is the number of layers associated with mapping from data in original space to 
@@ -53,21 +51,21 @@ public:
     ANN_Force() {};
     ~ANN_Force() {};
     
-    const vector<int>& get_num_of_nodes() const;
+    const std::vector<int>& get_num_of_nodes() const;
 
-    void set_num_of_nodes(int num[NUM_OF_LAYERS]);
+    void set_num_of_nodes(std::vector<int> num);
 
-    const vector<int>& get_index_of_backbone_atoms() const;
+    const std::vector<int>& get_index_of_backbone_atoms() const;
 
-    void set_index_of_backbone_atoms(int indices[NUM_OF_BACKBONE_ATOMS]);
+    void set_index_of_backbone_atoms(std::vector<int> indices);
 
-    const vector<vector<double> >& get_coeffients_of_connections() const;
+    const std::vector<std::vector<double> >& get_coeffients_of_connections() const;
     
-    void set_coeffients_of_connections(vector<vector<double> > coefficients);
+    void set_coeffients_of_connections(std::vector<std::vector<double> > coefficients);
 
-    const vector<string>& get_layer_types() const;
+    const std::vector<std::string>& get_layer_types() const;
 
-    void set_layer_types(vector<string>  temp_layer_types);
+    void set_layer_types(std::vector<std::string>  temp_layer_types);
 
 
     /**
@@ -93,10 +91,10 @@ protected:
     // double _globalQuarticK, _globalCubicK;
     ForceImpl* createImpl() const;
 private:
-    vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
-    vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
-    vector<vector<double> > coeff = vector<vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
-    vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
+    std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
+    std::vector<int> index_of_backbone_atoms = std::vector<int>(NUM_OF_BACKBONE_ATOMS); 
+    std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
+    std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS);
 };
 
 
