@@ -18,6 +18,11 @@ namespace std {
 
 %{
 #include "OpenMM_ANN.h"
+#include "OpenMM.h"
+#include "OpenMMAmoeba.h"
+#include "OpenMMDrude.h"
+#include "openmm/RPMDIntegrator.h"
+#include "openmm/RPMDMonteCarloBarostat.h"
 
 using namespace OpenMM;
 %}
@@ -30,7 +35,7 @@ import simtk.unit as unit
 #define NUM_OF_LAYERS 3
 #define NUM_OF_BACKBONE_ATOMS 60
 
-class ANN_Force : public Force {
+class ANN_Force : public OpenMM::Force {
 
 public:
     ANN_Force() {};

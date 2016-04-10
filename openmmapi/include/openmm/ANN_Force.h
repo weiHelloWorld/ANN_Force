@@ -45,7 +45,7 @@ namespace OpenMM {
  * TODO: description later
  */
 
-class ANN_Force : public Force {
+class ANN_Force : public OpenMM::Force {
 
 public:
     ANN_Force() {};
@@ -89,7 +89,7 @@ public:
     }
 protected:
     // double _globalQuarticK, _globalCubicK;
-    ForceImpl* createImpl() const;
+    OpenMM::ForceImpl* createImpl() const;
 private:
     std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<int> index_of_backbone_atoms = std::vector<int>(NUM_OF_BACKBONE_ATOMS); 
