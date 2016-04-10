@@ -5,7 +5,6 @@
 
 #include "../include/OpenMM_ANN.h"
 #include "../src/ANN_Force.cpp"
-#include "../src/ANN_ForceImpl.cpp"
 
 #include <iostream>
 #include <vector>
