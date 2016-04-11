@@ -34,7 +34,7 @@ void test_1() {
     State state = context.getState(State::Forces | State::Energy);
     {
         const vector<Vec3>& forces = state.getForces();
-        ASSERT_EQUAL_VEC(Vec3(100.0, 200.0, 300.0), forces[0], TOL);
+        ASSERT_EQUAL_VEC(Vec3(110.0, 220.0, 300.0), forces[0], TOL);
         ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[1], TOL);
         ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[2], TOL);
     }
@@ -44,7 +44,15 @@ void test_calculation() {
     System system;
     Platform& platform = Platform::getPlatformByName("Reference");
     ReferenceCalcANN_ForceKernel forcekernel("", platform, system);
-    
+    vector<RealVec> positionData(4);
+    positionData[0] = Vec3(0, 1, 0);
+    positionData[1] = Vec3(0, 0, 0);
+    positionData[2] = Vec3(1, 0, 0);
+    positionData[3] = Vec3(0, 0, 1);
+    RealOpenMM cos_value, sin_value;
+    forcekernel.get_cos_and_sin_for_four_atoms(0,1,2,3, positionData, cos_value, sin_value);
+    ASSERT_EQUAL_TOL(cos_value, 0, TOL);
+    ASSERT_EQUAL_TOL(sin_value, -1, TOL);
     return;
 
 }
@@ -53,6 +61,7 @@ int main(int argc, char* argv[]) {
     try {
         registerKernelFactories();  // this is required
         test_1();
+        test_calculation();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;

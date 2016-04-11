@@ -5,6 +5,8 @@
 #include "../../openmmapi/src/ANN_Force.cpp"
 
 #include <cmath>
+#include <iostream>
+#include <stdio.h>
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
@@ -123,10 +125,12 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
 }
 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
-                                const vector<RealVec>& positionData, RealOpenMM cos_value, RealOpenMM sin_value) {
+                                const vector<RealVec>& positionData, RealOpenMM& cos_value, RealOpenMM& sin_value) {
     RealVec diff_1 = positionData[idx_1] - positionData[idx_2];
     RealVec diff_2 = positionData[idx_2] - positionData[idx_3];
     RealVec diff_3 = positionData[idx_3] - positionData[idx_4];
+
+
     RealVec normal_1 = diff_1.cross(diff_2);
     RealVec normal_2 = diff_2.cross(diff_3);
     normal_1 /= sqrt(normal_1.dot(normal_1));  // normalization
@@ -135,6 +139,15 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     RealVec sin_vec = normal_1.cross(normal_2);
     int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
     sin_value = sqrt(sin_vec.dot(sin_vec)) * sign;
+#ifdef DEBUG    
+    printf("%f,%f,%f\n", diff_1[0], diff_1[1], diff_1[2]);
+    printf("%f,%f,%f\n", diff_2[0], diff_2[1], diff_2[2]);
+    printf("%f,%f,%f\n", diff_3[0], diff_3[1], diff_3[2]);
+    printf("%f,%f,%f\n", normal_1[0], normal_1[1], normal_1[2]);
+    printf("%f,%f,%f\n", normal_2[0], normal_2[1], normal_2[2]);
+    printf("%f,%f,%f\n", sin_vec[0], sin_vec[1], sin_vec[2]);
+    printf("%f\n", sin_value);
+#endif
 #ifdef DEBUG
     assert (abs(cos_value * cos_value + sin_value * sin_value - 1 ) < 1e-5);
 #endif

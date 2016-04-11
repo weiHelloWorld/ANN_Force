@@ -56,7 +56,7 @@ public:
     void get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData, vector<RealOpenMM>& cos_sin_value);
 
     void get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
-                                const vector<RealVec>& positionData, RealOpenMM cos_value, RealOpenMM sin_value);
+                                const vector<RealVec>& positionData, RealOpenMM& cos_value, RealOpenMM& sin_value);
 
     void calculate_output_of_each_layer(const vector<RealOpenMM>& cos_sin_value);
 
