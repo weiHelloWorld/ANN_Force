@@ -51,8 +51,34 @@ ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
     index_of_backbone_atoms = force.get_index_of_backbone_atoms();
-    auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
     layer_types = force.get_layer_types();
+    // now deal with coefficients of connections
+    auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
+    for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
+        int num_of_rows, num_of_cols; // num of rows/cols for the coeff matrix of this connection
+        num_of_rows = num_of_nodes[ii];
+        num_of_cols = num_of_nodes[ii + 1];
+        assert (num_of_rows * num_of_cols == temp_coeff[ii].size()); // check whether the size matches
+        // create a 2d array to hold coefficients begin
+        coeff[ii] = new double*[num_of_rows];
+        for (int kk = 0; kk < num_of_rows; kk ++) {
+            coeff[ii][kk] = new double[num_of_cols];
+        }
+        // creation end
+        for (int jj = 0; jj < temp_coeff[ii].size(); jj ++) {
+            coeff[ii][jj / num_of_cols][jj % num_of_cols] = temp_coeff[ii][jj];
+        }
+    }
+    return;
+}
+
+void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
+    for (int ii = 0; ii < num_of_rows; ii ++) {
+        for (int jj = 0; jj < num_of_cols; jj ++) {
+            printf("%lf\t", matrix[ii][jj]);
+        }
+        printf("\n");
+    }
     return;
 }
 

@@ -22,7 +22,7 @@ const double TOL = 1e-5;
 static void test_setters_getters_1() {
     cout << "running test_setters_getters_1\n";
     ANN_Force my_force;
-    int num_of_nodes[NUM_OF_LAYERS] = {76, 10, 2};
+    vector<int> num_of_nodes({76, 10, 2});
     my_force.set_num_of_nodes(num_of_nodes);
     for(int i = 0; i < NUM_OF_LAYERS; i ++) {
         ASSERT_EQUAL_TOL(num_of_nodes[i], my_force.get_num_of_nodes()[i], TOL); 
@@ -49,10 +49,10 @@ static void test_setters_getters_2() {
 static void test_setters_getters_3() {
     cout << "running test_setters_getters_3\n";
     ANN_Force my_force;
-    int idx[60] = {1, 2, 3, 17, 18, 19, 36, 37, 38, 57, 58, 59, 76, 77, 78, 93, 94, 95, \
+    vector<int> idx({1, 2, 3, 17, 18, 19, 36, 37, 38, 57, 58, 59, 76, 77, 78, 93, 94, 95, \
         117, 118, 119, 136, 137, 138, 158, 159, 160, 170, 171, 172, 177, 178, 179, 184, \
         185, 186, 198, 199, 200, 209, 210, 211, 220, 221, 222, 227, 228, 229, 251, 252, \
-        253, 265, 266, 267, 279, 280, 281, 293, 294, 295};
+        253, 265, 266, 267, 279, 280, 281, 293, 294, 295});
     my_force.set_index_of_backbone_atoms(idx);
     auto output = my_force.get_index_of_backbone_atoms();
     for (int i = 0; i < 60; i ++) {

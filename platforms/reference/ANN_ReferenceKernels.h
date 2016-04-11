@@ -59,6 +59,10 @@ public:
                                 const vector<RealVec>& positionData, RealOpenMM& cos_value, RealOpenMM& sin_value);
 
     void calculate_output_of_each_layer(const vector<RealOpenMM>& cos_sin_value);
+    vector<double** >& get_coeff() {
+        return coeff;
+    }
+
 
 private:
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
