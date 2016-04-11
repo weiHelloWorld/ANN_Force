@@ -12,8 +12,10 @@
 %include "std_vector.i"
 %include "std_string.i"
 namespace std {
-  %template(vectord) vector<double>;
-  %template(vectori) vector<int>;
+  %template(double_vector) vector<double>;
+  %template(int_vector) vector<int>;
+  %template(d_double_vector) vector<vector<double> >;
+  %template(string_vector) vector<string>;
 };
 
 %{
