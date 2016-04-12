@@ -16,6 +16,24 @@ using namespace std;
 
 const double TOL = 1e-5;
 
+void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
+    for (int ii = 0; ii < num_of_rows; ii ++) {
+        for (int jj = 0; jj < num_of_cols; jj ++) {
+            printf("%lf\t", matrix[ii][jj]);
+        }
+        printf("\n");
+    }
+    return;
+}
+
+void print_vector(vector<double> vec, int num) {
+    for (int ii = 0; ii < num; ii ++) {
+        printf("%lf\t", vec[ii]);
+    }
+    printf("\n");
+    return;
+}
+
 void test_1() {
     System system;
     system.addParticle(1.0);
@@ -67,10 +85,23 @@ void test_2() {
     forceField -> set_num_of_nodes(num_of_nodes);
     vector<vector<double> > coeff{{1,2,3,4,5,6}, {-1, -2, -3}};
     forceField -> set_coeffients_of_connections(coeff);
+    vector<vector<double> > bias{{1,2,3},{2}};
+    forceField -> set_values_of_biased_nodes(bias);
+    vector<string> layer_types {"Linear", "Linear"};
+    forceField -> set_layer_types(layer_types);
     forcekernel -> initialize(system, *forceField);
     auto temp_coef = forcekernel -> get_coeff();
-    print_matrix(temp_coef[0], 2, 3);
-    print_matrix(temp_coef[1], 3, 1);
+    print_matrix(temp_coef[0], 3, 2);
+    print_matrix(temp_coef[1], 1, 3);
+    vector<RealOpenMM> input{1,2};
+    forcekernel -> calculate_output_of_each_layer(input);
+    auto actual_output_of_layer = forcekernel -> get_output_of_each_layer();
+    vector<vector<double> > expected_output_of_layer{{1,2}, {6,13,20},{-90}};
+    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+        for (int jj = 0; jj < expected_output_of_layer[ii].size(); jj ++) {
+            ASSERT_EQUAL_TOL(expected_output_of_layer[ii][jj], actual_output_of_layer[ii][jj], TOL);
+        }
+    }
     return;
 }
 

@@ -67,9 +67,9 @@ public:
 
     void set_layer_types(std::vector<std::string>  temp_layer_types);
 
-    const std::vector<double>& get_values_of_biased_nodes() const;
+    const std::vector<std::vector<double> >& get_values_of_biased_nodes() const;
 
-    void set_values_of_biased_nodes(std::vector<double> bias);
+    void set_values_of_biased_nodes(std::vector<std::vector<double> > bias);
 
     
 
@@ -99,8 +99,8 @@ private:
     std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<int> index_of_backbone_atoms = std::vector<int>(NUM_OF_BACKBONE_ATOMS); 
     std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
-    std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS);
-    std::vector<double> values_of_biased_nodes = std::vector<double>(NUM_OF_LAYERS - 1);
+    std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS - 1); // the input layer is not included
+    std::vector<std::vector<double> > values_of_biased_nodes = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
 };
 
 

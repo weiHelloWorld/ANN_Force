@@ -58,7 +58,12 @@ public:
     void get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
                                 const vector<RealVec>& positionData, RealOpenMM& cos_value, RealOpenMM& sin_value);
 
-    void calculate_output_of_each_layer(const vector<RealOpenMM>& cos_sin_value);
+    void calculate_output_of_each_layer(const vector<RealOpenMM>& input);
+
+    vector<vector<double> >& get_output_of_each_layer() {
+        return output_of_each_layer;
+    }
+
     vector<double** >& get_coeff() {
         return coeff;
     }
@@ -68,8 +73,9 @@ private:
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
-    vector<string> layer_types = vector<string>(NUM_OF_LAYERS);
+    vector<string> layer_types = vector<string>(NUM_OF_LAYERS - 1);
     vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS); // do we need to include input_of_each_layer as well?
+    vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);
 
     const System& system;  
 };

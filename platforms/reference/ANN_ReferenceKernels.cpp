@@ -46,18 +46,20 @@ ReferenceCalcANN_ForceKernel::ReferenceCalcANN_ForceKernel(std::string name, con
 }
 
 ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
+    // TODO: delete the coefficients allocated
 }
 
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
     index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     layer_types = force.get_layer_types();
+    values_of_biased_nodes = force.get_values_of_biased_nodes();
     // now deal with coefficients of connections
     auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
         int num_of_rows, num_of_cols; // num of rows/cols for the coeff matrix of this connection
-        num_of_rows = num_of_nodes[ii];
-        num_of_cols = num_of_nodes[ii + 1];
+        num_of_rows = num_of_nodes[ii + 1];
+        num_of_cols = num_of_nodes[ii];
         assert (num_of_rows * num_of_cols == temp_coeff[ii].size()); // check whether the size matches
         // create a 2d array to hold coefficients begin
         coeff[ii] = new double*[num_of_rows];
@@ -68,16 +70,6 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
         for (int jj = 0; jj < temp_coeff[ii].size(); jj ++) {
             coeff[ii][jj / num_of_cols][jj % num_of_cols] = temp_coeff[ii][jj];
         }
-    }
-    return;
-}
-
-void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
-    for (int ii = 0; ii < num_of_rows; ii ++) {
-        for (int jj = 0; jj < num_of_cols; jj ++) {
-            printf("%lf\t", matrix[ii][jj]);
-        }
-        printf("\n");
     }
     return;
 }
@@ -117,8 +109,30 @@ RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>
 }
 
 
-void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<RealOpenMM>& cos_sin_value) {
-
+void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<RealOpenMM>& input) {
+    // first layer
+    output_of_each_layer[0] = input;
+    // following layers
+    for(int ii = 1; ii < NUM_OF_LAYERS; ii ++) {
+        vector<double> temp_input_of_this_layer = vector<double>(num_of_nodes[ii]);
+        output_of_each_layer[ii].resize(num_of_nodes[ii]);
+        // first calculate input
+        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+            temp_input_of_this_layer[jj] = values_of_biased_nodes[ii - 1][jj];  // add bias term
+            for (int kk = 0; kk < num_of_nodes[ii - 1]; kk ++) {
+                temp_input_of_this_layer[jj] += coeff[ii - 1][jj][kk] * output_of_each_layer[ii - 1][kk];
+            }
+        }
+        // then get output
+        if (layer_types[ii - 1] == string("Linear")) {
+            for(int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+                output_of_each_layer[ii][jj] = temp_input_of_this_layer[jj];
+            }
+        }
+        // else if () {
+            
+        // }
+    }
     return;
 }
 
@@ -166,13 +180,13 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
     sin_value = sqrt(sin_vec.dot(sin_vec)) * sign;
 #ifdef DEBUG    
-    printf("%f,%f,%f\n", diff_1[0], diff_1[1], diff_1[2]);
-    printf("%f,%f,%f\n", diff_2[0], diff_2[1], diff_2[2]);
-    printf("%f,%f,%f\n", diff_3[0], diff_3[1], diff_3[2]);
-    printf("%f,%f,%f\n", normal_1[0], normal_1[1], normal_1[2]);
-    printf("%f,%f,%f\n", normal_2[0], normal_2[1], normal_2[2]);
-    printf("%f,%f,%f\n", sin_vec[0], sin_vec[1], sin_vec[2]);
-    printf("%f\n", sin_value);
+    // printf("%f,%f,%f\n", diff_1[0], diff_1[1], diff_1[2]);
+    // printf("%f,%f,%f\n", diff_2[0], diff_2[1], diff_2[2]);
+    // printf("%f,%f,%f\n", diff_3[0], diff_3[1], diff_3[2]);
+    // printf("%f,%f,%f\n", normal_1[0], normal_1[1], normal_1[2]);
+    // printf("%f,%f,%f\n", normal_2[0], normal_2[1], normal_2[2]);
+    // printf("%f,%f,%f\n", sin_vec[0], sin_vec[1], sin_vec[2]);
+    // printf("%f\n", sin_value);
 #endif
 #ifdef DEBUG
     assert (abs(cos_value * cos_value + sin_value * sin_value - 1 ) < 1e-5);

@@ -48,11 +48,11 @@ void ANN_Force::set_layer_types(std::vector<std::string>  temp_layer_types) {
     return;
 }
 
-const std::vector<double>& ANN_Force::get_values_of_biased_nodes() const {
+const std::vector<std::vector<double> >& ANN_Force::get_values_of_biased_nodes() const {
     return values_of_biased_nodes;
 }
 
-void ANN_Force::set_values_of_biased_nodes(std::vector<double> bias) {
+void ANN_Force::set_values_of_biased_nodes(std::vector<std::vector<double> > bias) {
     values_of_biased_nodes = bias;
     return;
 }
