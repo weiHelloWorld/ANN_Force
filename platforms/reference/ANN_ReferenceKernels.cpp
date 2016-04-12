@@ -129,9 +129,11 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
                 output_of_each_layer[ii][jj] = temp_input_of_this_layer[jj];
             }
         }
-        // else if () {
-            
-        // }
+        else if (layer_types[ii - 1] == string("Tanh")) {
+            for(int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+                output_of_each_layer[ii][jj] = tanh(temp_input_of_this_layer[jj]);
+            }
+        }
     }
     return;
 }

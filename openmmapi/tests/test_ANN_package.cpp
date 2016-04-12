@@ -87,7 +87,7 @@ void test_2() {
     forceField -> set_coeffients_of_connections(coeff);
     vector<vector<double> > bias{{1,2,3},{2}};
     forceField -> set_values_of_biased_nodes(bias);
-    vector<string> layer_types {"Linear", "Linear"};
+    vector<string> layer_types {"Linear", "Tanh"};
     forceField -> set_layer_types(layer_types);
     forcekernel -> initialize(system, *forceField);
     auto temp_coef = forcekernel -> get_coeff();
@@ -96,7 +96,7 @@ void test_2() {
     vector<RealOpenMM> input{1,2};
     forcekernel -> calculate_output_of_each_layer(input);
     auto actual_output_of_layer = forcekernel -> get_output_of_each_layer();
-    vector<vector<double> > expected_output_of_layer{{1,2}, {6,13,20},{-90}};
+    vector<vector<double> > expected_output_of_layer{{1,2}, {6,13,20},{-1}};
     for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
         for (int jj = 0; jj < expected_output_of_layer[ii].size(); jj ++) {
             ASSERT_EQUAL_TOL(expected_output_of_layer[ii][jj], actual_output_of_layer[ii][jj], TOL);
