@@ -89,8 +89,9 @@ void test_2() {
     forceField -> set_values_of_biased_nodes(bias);
     vector<string> layer_types {"Linear", "Tanh"};
     forceField -> set_layer_types(layer_types);
-    vector<double> pc{1};
+    vector<double> pc{10};
     forceField -> set_potential_center(pc);
+    forceField -> set_force_constant(10);
     forcekernel -> initialize(system, *forceField);
     auto temp_coef = forcekernel -> get_coeff();
     print_matrix(temp_coef[0], 3, 2);
@@ -104,6 +105,11 @@ void test_2() {
             ASSERT_EQUAL_TOL(expected_output_of_layer[ii][jj], actual_output_of_layer[ii][jj], TOL);
         }
     }
+    vector<vector<double> > result;
+    forcekernel -> back_prop(result);
+    print_vector(result[0], 2);
+    print_vector(result[1], 3);
+    print_vector(result[2], 1);
     return;
 }
 

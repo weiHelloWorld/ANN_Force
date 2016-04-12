@@ -68,7 +68,7 @@ public:
         return coeff;
     }
     
-    void back_prop(vector<double>& derivatives_for_input);
+    void back_prop(vector<vector<double> >& derivatives_of_each_layer);
 
 
 private:

@@ -141,28 +141,41 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     return;
 }
 
-void ReferenceCalcANN_ForceKernel::back_prop(vector<double>& derivatives_for_input) {
+void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivatives_of_each_layer) {
     // the return value is the derivatives with respect to the input in the first layer
     // return value is stored in "derivatives_for_input"
-    auto temp_derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
+    derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
     // first calculate derivatives for bottleneck layer
     for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
-        temp_derivatives_of_each_layer[NUM_OF_LAYERS - 1][ii] = output_of_each_layer[NUM_OF_LAYERS - 1][ii] \
-                                                                - potential_center[ii];
+        derivatives_of_each_layer[NUM_OF_LAYERS - 1][ii] = (output_of_each_layer[NUM_OF_LAYERS - 1][ii] \
+                                                                - potential_center[ii]) * force_constant;
     }
     // the use back propagation to calculate derivatives for previous layers
     for (int jj = NUM_OF_LAYERS - 2; jj >= 0; jj --) {
-        for (int mm = 0; mm = num_of_nodes[jj]; mm ++) {
-            temp_derivatives_of_each_layer[jj][mm] = 0;
-            for (int kk = 0; kk = num_of_nodes[jj + 1]; kk ++) {
-                temp_derivatives_of_each_layer[jj][mm] += temp_derivatives_of_each_layer[jj + 1][kk] \
+        for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
+            derivatives_of_each_layer[jj][mm] = 0;
+            for (int kk = 0; kk < num_of_nodes[jj + 1]; kk ++) {
+                if (layer_types[jj] == string("Tanh")) {
+                    // printf("tanh\n");
+                    derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
                                 * coeff[jj][kk][mm] \
                                 * (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]);
-                                // TODO: here we assume that it is Tanh Layer, fix this later.
+#ifdef DEBUG
+                    printf("this:\n");
+                    printf("%lf\n", derivatives_of_each_layer[jj + 1][kk]);
+                    printf("%lf\n", coeff[jj][kk][mm]);
+                    printf("%lf\n", (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]));
+#endif
+                }
+                else if (layer_types[jj] == string("Linear")) {
+                    // printf("linear\n");
+                    derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
+                                * coeff[jj][kk][mm] \
+                                * 1;
+                }
             }
         }
     }
-    derivatives_for_input = temp_derivatives_of_each_layer[0];
     return;
 }
 
