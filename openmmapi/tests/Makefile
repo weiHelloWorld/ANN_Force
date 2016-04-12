@@ -27,4 +27,4 @@ wrapper:
 	$(LIB_OPTION) -L/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/tests/ -lANN
 
 clean:
-	rm test_ANN_Force test_ANN_package _ANN.so libANN.so *.o
+	rm test_ANN_Force test_ANN_package _ANN.so libANN.so *.o ANN_wrap.cxx ANN.py* 

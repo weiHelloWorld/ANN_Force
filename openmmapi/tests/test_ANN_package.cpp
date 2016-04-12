@@ -83,13 +83,13 @@ void test_2() {
     ReferenceCalcANN_ForceKernel* forcekernel = new ReferenceCalcANN_ForceKernel("", platform, system);
     vector<int> num_of_nodes({2, 3, 1});
     forceField -> set_num_of_nodes(num_of_nodes);
-    vector<vector<double> > coeff{{1,2,3,4,5,6}, {-1, -2, -3}};
+    vector<vector<double> > coeff{{0.01,0.02,0.03,0.04,0.05,0.06}, {-1, -2, -3}};
     forceField -> set_coeffients_of_connections(coeff);
-    vector<vector<double> > bias{{1,2,3},{2}};
+    vector<vector<double> > bias{{0.01,0.02,0.03},{2}};
     forceField -> set_values_of_biased_nodes(bias);
     vector<string> layer_types {"Linear", "Tanh"};
     forceField -> set_layer_types(layer_types);
-    vector<double> pc{10};
+    vector<double> pc{0};
     forceField -> set_potential_center(pc);
     forceField -> set_force_constant(10);
     forcekernel -> initialize(system, *forceField);
@@ -99,7 +99,7 @@ void test_2() {
     vector<RealOpenMM> input{1,2};
     forcekernel -> calculate_output_of_each_layer(input);
     auto actual_output_of_layer = forcekernel -> get_output_of_each_layer();
-    vector<vector<double> > expected_output_of_layer{{1,2}, {6,13,20},{-1}};
+    vector<vector<double> > expected_output_of_layer{{1,2}, {0.06,0.13,0.20},{tanh(1.08)}};
     for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
         for (int jj = 0; jj < expected_output_of_layer[ii].size(); jj ++) {
             ASSERT_EQUAL_TOL(expected_output_of_layer[ii][jj], actual_output_of_layer[ii][jj], TOL);

@@ -161,10 +161,10 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
                                 * coeff[jj][kk][mm] \
                                 * (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]);
 #ifdef DEBUG
-                    printf("this:\n");
-                    printf("%lf\n", derivatives_of_each_layer[jj + 1][kk]);
-                    printf("%lf\n", coeff[jj][kk][mm]);
-                    printf("%lf\n", (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]));
+                    // printf("this:\n");
+                    // printf("%lf\n", derivatives_of_each_layer[jj + 1][kk]);
+                    // printf("%lf\n", coeff[jj][kk][mm]);
+                    // printf("%lf\n", (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]));
 #endif
                 }
                 else if (layer_types[jj] == string("Linear")) {
