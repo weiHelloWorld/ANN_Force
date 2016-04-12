@@ -67,6 +67,8 @@ public:
     vector<double** >& get_coeff() {
         return coeff;
     }
+    
+    void back_prop(vector<double>& derivatives_for_input);
 
 
 private:

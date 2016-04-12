@@ -89,6 +89,8 @@ void test_2() {
     forceField -> set_values_of_biased_nodes(bias);
     vector<string> layer_types {"Linear", "Tanh"};
     forceField -> set_layer_types(layer_types);
+    vector<double> pc{1};
+    forceField -> set_potential_center(pc);
     forcekernel -> initialize(system, *forceField);
     auto temp_coef = forcekernel -> get_coeff();
     print_matrix(temp_coef[0], 3, 2);

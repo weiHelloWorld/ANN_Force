@@ -141,7 +141,7 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     return;
 }
 
-void back_prop(vector<double>& derivatives_for_input) {
+void ReferenceCalcANN_ForceKernel::back_prop(vector<double>& derivatives_for_input) {
     // the return value is the derivatives with respect to the input in the first layer
     // return value is stored in "derivatives_for_input"
     auto temp_derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
