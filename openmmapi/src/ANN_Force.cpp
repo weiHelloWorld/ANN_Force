@@ -57,6 +57,24 @@ void ANN_Force::set_values_of_biased_nodes(std::vector<std::vector<double> > bia
     return;
 }
 
+const std::vector<double>& ANN_Force::get_potential_center() const {
+    return potential_center;
+}
+
+void ANN_Force::set_potential_center(std::vector<double> temp_potential_center) {
+    potential_center = temp_potential_center;
+    return;
+}
+
+const double ANN_Force::get_force_constant() const {
+    return force_constant;
+}
+
+void ANN_Force::set_force_constant(double temp_force_constant) {
+    force_constant = temp_force_constant;
+    return;
+}
+
 
 ForceImpl* ANN_Force::createImpl() const {
     return new ANN_ForceImpl(*this);

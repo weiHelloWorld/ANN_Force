@@ -71,6 +71,13 @@ public:
 
     void set_values_of_biased_nodes(std::vector<std::vector<double> > bias);
 
+    const std::vector<double>& get_potential_center() const;
+
+    void set_potential_center(std::vector<double> temp_potential_center);
+
+    const double get_force_constant() const;
+
+    void set_force_constant(double temp_force_constant);
     
 
     /**
@@ -101,6 +108,8 @@ private:
     std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
     std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS - 1); // the input layer is not included
     std::vector<std::vector<double> > values_of_biased_nodes = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
+    std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
+    double force_constant;
 };
 
 

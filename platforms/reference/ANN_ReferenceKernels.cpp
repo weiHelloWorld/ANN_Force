@@ -54,6 +54,8 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
     index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     layer_types = force.get_layer_types();
     values_of_biased_nodes = force.get_values_of_biased_nodes();
+    potential_center = force.get_potential_center();
+    force_constant = force.get_force_constant();
     // now deal with coefficients of connections
     auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
@@ -138,6 +140,12 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     return;
 }
 
+void back_prop(vector<double>& derivatives_for_input) {
+    // the return value is the derivatives with respect to the input in the first layer
+    // return value is stored in "derivatives_for_input"
+
+    return;
+}
 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData,
                                                                             vector<RealOpenMM>& cos_sin_value) {
