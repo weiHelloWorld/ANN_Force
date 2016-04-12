@@ -56,6 +56,7 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
     force_constant = force.get_force_constant();
+    assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
     // now deal with coefficients of connections
     auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
@@ -143,7 +144,25 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
 void back_prop(vector<double>& derivatives_for_input) {
     // the return value is the derivatives with respect to the input in the first layer
     // return value is stored in "derivatives_for_input"
-
+    auto temp_derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
+    // first calculate derivatives for bottleneck layer
+    for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
+        temp_derivatives_of_each_layer[NUM_OF_LAYERS - 1][ii] = output_of_each_layer[NUM_OF_LAYERS - 1][ii] \
+                                                                - potential_center[ii];
+    }
+    // the use back propagation to calculate derivatives for previous layers
+    for (int jj = NUM_OF_LAYERS - 2; jj >= 0; jj --) {
+        for (int mm = 0; mm = num_of_nodes[jj]; mm ++) {
+            temp_derivatives_of_each_layer[jj][mm] = 0;
+            for (int kk = 0; kk = num_of_nodes[jj + 1]; kk ++) {
+                temp_derivatives_of_each_layer[jj][mm] += temp_derivatives_of_each_layer[jj + 1][kk] \
+                                * coeff[jj][kk][mm] \
+                                * (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]);
+                                // TODO: here we assume that it is Tanh Layer, fix this later.
+            }
+        }
+    }
+    derivatives_for_input = temp_derivatives_of_each_layer[0];
     return;
 }
 
