@@ -102,7 +102,7 @@ void ReferenceCalcANN_ForceKernel::copyParametersToContext(ContextImpl& context,
     // }
 }
 
-RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
+RealOpenMM ReferenceCalcANN_ForceKernel::candidate_1(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case: add force on first atom, fix it at (0,0,0)
     RealOpenMM coef = 100.0;
     forceData[0][0]    += - coef * (positionData[0][0] - 0.1);
@@ -110,6 +110,22 @@ RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>
     forceData[0][2]    += - coef * positionData[0][2];
     return 0;  // TODO: fix this later
 }
+
+RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionData, vector<RealVec>& forceData) {
+    // test case
+    vector<RealOpenMM> cos_sin_value;
+    get_cos_and_sin_of_dihedral_angles(positionData, cos_sin_value);
+    calculate_output_of_each_layer(cos_sin_value);
+    vector<vector<double> > derivatives_of_each_layer;
+    back_prop(derivatives_of_each_layer);
+    get_force_from_derivative_of_first_layer(0, 1, positionData, forceData); // TODO: here we only include the first dihedral, add others later
+    return 0;  // TODO: fix this later
+}
+
+RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
+    return candidate_1(positionData, forceData);
+}
+
 
 
 void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<RealOpenMM>& input) {
@@ -179,6 +195,7 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
 
 void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int index_of_cos_node_in_input_layer, 
                                                                             int index_of_sin_node_in_input_layer,
+                                                                            vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData) {
     /**
      * this function calculates force (the derivative of potential with respect to the Cartesian coordinates for four atoms),
@@ -230,7 +247,7 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     forceData[idx_2][2] += - der_of_cos_to_diff_1_z;
     // now diff_2
     // now diff_3
-    
+    // TODO
 
     return;
 }

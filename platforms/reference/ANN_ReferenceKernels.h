@@ -53,6 +53,10 @@ public:
      */
     RealOpenMM calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData);
 
+    RealOpenMM candidate_1(vector<RealVec>& positionData, vector<RealVec>& forceData);
+
+    RealOpenMM candidate_2(vector<RealVec>& positionData, vector<RealVec>& forceData);
+
     void get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData, vector<RealOpenMM>& cos_sin_value);
 
     void get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
@@ -72,6 +76,7 @@ public:
 
     void get_force_from_derivative_of_first_layer(int index_of_node_in_input_layer_1, 
                                                                             int index_of_node_in_input_layer_2,
+                                                                            vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData);
 
 

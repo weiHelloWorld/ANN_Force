@@ -76,7 +76,7 @@ void test_sincos_of_dihedrals_four_atom() {
 }
 
 
-void test_2() {
+void test_forward_and_backward_prop() {
     System system;
     ANN_Force* forceField = new ANN_Force();
     Platform& platform = Platform::getPlatformByName("Reference");
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
         registerKernelFactories();  // this is required
         test_1();
         test_sincos_of_dihedrals_four_atom();
-        test_2();
+        test_forward_and_backward_prop();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;
