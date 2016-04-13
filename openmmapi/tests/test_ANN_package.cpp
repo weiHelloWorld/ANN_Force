@@ -35,6 +35,7 @@ void print_vector(vector<double> vec, int num) {
 }
 
 void test_1() {
+    cout << "running test_1\n";
     System system;
     int num_of_atoms = 4;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -63,6 +64,7 @@ void test_1() {
 }
 
 void test_sincos_of_dihedrals_four_atom() {
+    cout << "running test_sincos_of_dihedrals_four_atom\n";
     System system;
     Platform& platform = Platform::getPlatformByName("Reference");
     ReferenceCalcANN_ForceKernel* forcekernel = new ReferenceCalcANN_ForceKernel("", platform, system);
@@ -80,12 +82,12 @@ void test_sincos_of_dihedrals_four_atom() {
 
 
 void test_forward_and_backward_prop() {
+    cout << "running test_forward_and_backward_prop\n";
     System system;
     ANN_Force* forceField = new ANN_Force();
     Platform& platform = Platform::getPlatformByName("Reference");
     ReferenceCalcANN_ForceKernel* forcekernel = new ReferenceCalcANN_ForceKernel("", platform, system);
-    vector<int> num_of_nodes({2, 3, 1});
-    forceField -> set_num_of_nodes(num_of_nodes);
+    forceField -> set_num_of_nodes(vector<int>({2, 3, 1}));
     vector<vector<double> > coeff{{0.01,0.02,0.03,0.04,0.05,0.06}, {-1, -2, -3}};
     forceField -> set_coeffients_of_connections(coeff);
     vector<vector<double> > bias{{0.01,0.02,0.03},{2}};
@@ -116,13 +118,52 @@ void test_forward_and_backward_prop() {
     return;
 }
 
+void test_3() {
+    cout << "running test_3\n";
+    System system;
+    int num_of_atoms = 4;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.01);
+    ANN_Force* forceField = new ANN_Force();
+    forceField -> set_num_of_nodes(vector<int>({2,2,2}));
+    forceField -> set_layer_types(vector<string>({"Linear", "Linear"}));
+    vector<vector<double> > coeff{{1, 0, 0, 1}, {1, 0, 0, 1}};
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_potential_center(vector<double>({0, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0}, {0}});
+    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3}));
+    system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName("Reference");
+    Context context(system, integrator, platform);
+    vector<Vec3> positions(num_of_atoms);
+    positions[0] = Vec3(-1, -2, -3);
+    positions[1] = Vec3(0, 0, 0);
+    positions[2] = Vec3(1, 0, 0);
+    positions[3] = Vec3(0, 0, 1);
+    context.setPositions(positions);
+
+    State state = context.getState(State::Forces | State::Energy);
+    {
+        const vector<Vec3>& forces = state.getForces();
+        ASSERT_EQUAL_VEC(Vec3(110.0, 220.0, 300.0), forces[0], TOL);
+        ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[1], TOL);
+        ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[2], TOL);
+    }
+    return;
+}
+
+
 
 int main(int argc, char* argv[]) {
     try {
         registerKernelFactories();  // this is required
-        test_1();
+        // test_1();
         test_sincos_of_dihedrals_four_atom();
-        test_forward_and_backward_prop();
+        // test_forward_and_backward_prop();
+        test_3();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;

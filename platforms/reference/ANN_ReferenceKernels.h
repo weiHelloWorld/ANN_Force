@@ -77,7 +77,8 @@ public:
     void get_force_from_derivative_of_first_layer(int index_of_node_in_input_layer_1, 
                                                                             int index_of_node_in_input_layer_2,
                                                                             vector<RealVec>& positionData,
-                                                                            vector<RealVec>& forceData);
+                                                                            vector<RealVec>& forceData,
+                                                                            vector<double>& derivatives_of_first_layer);
 
 
 private:

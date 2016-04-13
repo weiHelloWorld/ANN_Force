@@ -123,7 +123,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
 }
 
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
-    return candidate_1(positionData, forceData);
+    return candidate_2(positionData, forceData);
 }
 
 
@@ -256,6 +256,9 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData,
                                                                             vector<RealOpenMM>& cos_sin_value) {
     assert (index_of_backbone_atoms.size() % 3 == 0);
+#ifdef DEBUG
+    printf("size of index_of_backbone_atoms = %lu\n", index_of_backbone_atoms.size());
+#endif
     RealOpenMM temp_cos, temp_sin;
     for (int ii = 0; ii < index_of_backbone_atoms.size() / 3; ii ++) {
         if (ii != 0) {
@@ -305,6 +308,8 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     // printf("%f\n", sin_value);
 #endif
 #ifdef DEBUG
+    printf("idx_1 = %d, idx_2 = %d, idx_3 = %d, idx_4 = %d\n", idx_1, idx_2, idx_3, idx_4);
+    printf("cos_value = %lf, sin_value = %lf\n", cos_value, sin_value);
     assert (abs(cos_value * cos_value + sin_value * sin_value - 1 ) < 1e-5);
 #endif
     return;
