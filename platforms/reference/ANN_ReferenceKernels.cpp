@@ -118,7 +118,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     calculate_output_of_each_layer(cos_sin_value);
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
-    get_force_from_derivative_of_first_layer(0, 1, positionData, forceData); // TODO: here we only include the first dihedral, add others later
+    get_force_from_derivative_of_first_layer(0, 1, positionData, forceData, derivatives_of_each_layer[0]); // TODO: here we only include the first dihedral, add others later
     return 0;  // TODO: fix this later
 }
 
@@ -196,7 +196,8 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
 void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int index_of_cos_node_in_input_layer, 
                                                                             int index_of_sin_node_in_input_layer,
                                                                             vector<RealVec>& positionData,
-                                                                            vector<RealVec>& forceData) {
+                                                                            vector<RealVec>& forceData,
+                                                                            vector<double>& derivatives_of_first_layer) {
     /**
      * this function calculates force (the derivative of potential with respect to the Cartesian coordinates for four atoms),
      * from the derivatives with respect to the inputs in the first layer
@@ -239,12 +240,12 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
                                 /(v1_squared * sqrt(v1_squared) * sqrt(v2_squared)); // this is derivative of cos value with respect to x component of diff_1
     double der_of_cos_to_diff_1_y = (v1_squared*(v2_x*x23 - v2_z*x21) + (-v1_x*x23 + v1_z*x21)*(v1_x*v2_x + v1_y*v2_y + v1_z*v2_z))/(v1_squared * sqrt(v1_squared) * sqrt(v2_squared));
     double der_of_cos_to_diff_1_z = (-v1_squared*(v2_x*x22 - v2_y*x21) + (v1_x*x22 - v1_y*x21)*(v1_x*v2_x + v1_y*v2_y + v1_z*v2_z))/(v1_squared * sqrt(v1_squared) * sqrt(v2_squared));
-    forceData[idx_1][0] += der_of_cos_to_diff_1_x;
-    forceData[idx_2][0] += - der_of_cos_to_diff_1_x;
-    forceData[idx_1][1] += der_of_cos_to_diff_1_y;
-    forceData[idx_2][1] += - der_of_cos_to_diff_1_y;
-    forceData[idx_1][2] += der_of_cos_to_diff_1_z;
-    forceData[idx_2][2] += - der_of_cos_to_diff_1_z;
+    forceData[idx_1][0] += + der_of_cos_to_diff_1_x * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
+    forceData[idx_2][0] += - der_of_cos_to_diff_1_x * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
+    forceData[idx_1][1] += + der_of_cos_to_diff_1_y * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
+    forceData[idx_2][1] += - der_of_cos_to_diff_1_y * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
+    forceData[idx_1][2] += + der_of_cos_to_diff_1_z * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
+    forceData[idx_2][2] += - der_of_cos_to_diff_1_z * derivatives_of_first_layer[index_of_cos_node_in_input_layer];
     // now diff_2
     // now diff_3
     // TODO

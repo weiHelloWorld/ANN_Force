@@ -36,20 +36,23 @@ void print_vector(vector<double> vec, int num) {
 
 void test_1() {
     System system;
-    system.addParticle(1.0);
-    system.addParticle(1.0);
-    system.addParticle(1.0);
+    int num_of_atoms = 4;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
     // cout << "platform = " << platform.getName() << endl;
     Context context(system, integrator, platform);
-    vector<Vec3> positions(3);
+    vector<Vec3> positions(num_of_atoms);
     positions[0] = Vec3(-1, -2, -3);
     positions[1] = Vec3(0, 0, 0);
     positions[2] = Vec3(1, 0, 0);
+    positions[3] = Vec3(0, 0, 1);
     context.setPositions(positions);
+
     State state = context.getState(State::Forces | State::Energy);
     {
         const vector<Vec3>& forces = state.getForces();
