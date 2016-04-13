@@ -70,6 +70,10 @@ public:
     
     void back_prop(vector<vector<double> >& derivatives_of_each_layer);
 
+    void get_force_from_derivative_of_first_layer(int index_of_node_in_input_layer_1, 
+                                                                            int index_of_node_in_input_layer_2,
+                                                                            vector<RealVec>& forceData);
+
 
 private:
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers

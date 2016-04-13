@@ -142,8 +142,6 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
 }
 
 void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivatives_of_each_layer) {
-    // the return value is the derivatives with respect to the input in the first layer
-    // return value is stored in "derivatives_for_input"
     derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
     // first calculate derivatives for bottleneck layer
     for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
@@ -176,6 +174,64 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
             }
         }
     }
+    return;
+}
+
+void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int index_of_cos_node_in_input_layer, 
+                                                                            int index_of_sin_node_in_input_layer,
+                                                                            vector<RealVec>& forceData) {
+    /**
+     * this function calculates force (the derivative of potential with respect to the Cartesian coordinates for four atoms),
+     * from the derivatives with respect to the inputs in the first layer
+     * INPUT: two indices of nodes in the input layer, corresponding to cos_value and sin_value respectively
+     * NO OUTPUT, it updates the 'forceData' for these four atoms
+     */
+    // first work with cos value
+    int idx_1, idx_2, idx_3, idx_4; // indices of four atoms forming this dihedral
+    int index_of_dihedral = index_of_cos_node_in_input_layer / 2;
+    if (index_of_dihedral % 2 == 0) {
+        idx_1 = index_of_backbone_atoms[3 * index_of_dihedral];
+        idx_2 = index_of_backbone_atoms[3 * index_of_dihedral + 1];
+        idx_3 = index_of_backbone_atoms[3 * index_of_dihedral + 2];
+        idx_4 = index_of_backbone_atoms[3 * index_of_dihedral + 3];
+    }
+    else {
+        idx_1 = index_of_backbone_atoms[3 * index_of_dihedral - 1];
+        idx_2 = index_of_backbone_atoms[3 * index_of_dihedral];
+        idx_3 = index_of_backbone_atoms[3 * index_of_dihedral + 1];
+        idx_4 = index_of_backbone_atoms[3 * index_of_dihedral + 2];
+    }
+
+    RealVec diff_1 = positionData[idx_1] - positionData[idx_2];
+    RealVec diff_2 = positionData[idx_2] - positionData[idx_3];
+    RealVec diff_3 = positionData[idx_3] - positionData[idx_4];
+
+    RealVec normal_1 = diff_1.cross(diff_2);
+    RealVec normal_2 = diff_2.cross(diff_3);
+
+    double v1_squared = normal_1.dot(normal_1);
+    double v2_squared = normal_2.dot(normal_2);
+    double v1_x = normal_1[0], v1_y = normal_1[1], v1_z = normal_1[2]; 
+    double v2_x = normal_2[0], v2_y = normal_2[1], v2_z = normal_2[2];
+    double x11 = diff_1[0], x12 = diff_1[1], x13 = diff_1[2];
+    double x21 = diff_2[0], x22 = diff_2[1], x23 = diff_2[2]; 
+    double x31 = diff_3[0], x32 = diff_3[1], x33 = diff_3[2]; 
+    // first deal with derivatives related to diff_1
+    double der_of_cos_to_diff_1_x = (v1_squared*(-v2_y*x23 + v2_z*x22)
+                                - (-v1_y*x23 + v1_z*x22)*(v1_x*v2_x + v1_y*v2_y + v1_z*v2_z))
+                                /(v1_squared * sqrt(v1_squared) * sqrt(v2_squared)); // this is derivative of cos value with respect to x component of diff_1
+    double der_of_cos_to_diff_1_y = (v1_squared*(v2_x*x23 - v2_z*x21) + (-v1_x*x23 + v1_z*x21)*(v1_x*v2_x + v1_y*v2_y + v1_z*v2_z))/(v1_squared * sqrt(v1_squared) * sqrt(v2_squared));
+    double der_of_cos_to_diff_1_z = (-v1_squared*(v2_x*x22 - v2_y*x21) + (v1_x*x22 - v1_y*x21)*(v1_x*v2_x + v1_y*v2_y + v1_z*v2_z))/(v1_squared * sqrt(v1_squared) * sqrt(v2_squared));
+    forceData[idx_1][0] += der_of_cos_to_diff_1_x;
+    forceData[idx_2][0] += - der_of_cos_to_diff_1_x;
+    forceData[idx_1][1] += der_of_cos_to_diff_1_y;
+    forceData[idx_2][1] += - der_of_cos_to_diff_1_y;
+    forceData[idx_1][2] += der_of_cos_to_diff_1_z;
+    forceData[idx_2][2] += - der_of_cos_to_diff_1_z;
+    // now diff_2
+    // now diff_3
+    
+
     return;
 }
 
