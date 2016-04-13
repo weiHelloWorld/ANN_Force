@@ -34,6 +34,14 @@ void print_vector(vector<double> vec, int num) {
     return;
 }
 
+void print_Vec3(Vec3 temp_vec) {
+    for (int ii = 0; ii < 3; ii ++) {
+        printf("%f\t", temp_vec[ii]);
+    }
+    printf("\n");
+    return;
+}
+
 void test_1() {
     cout << "running test_1\n";
     System system;
@@ -121,20 +129,29 @@ void test_forward_and_backward_prop() {
 void test_3() {
     cout << "running test_3\n";
     System system;
-    int num_of_atoms = 4;
+    int num_of_atoms = 6;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         system.addParticle(1.0);    
     }
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
-    forceField -> set_num_of_nodes(vector<int>({2,2,2}));
+    forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
     forceField -> set_layer_types(vector<string>({"Linear", "Linear"}));
-    vector<vector<double> > coeff{{1, 0, 0, 1}, {1, 0, 0, 1}};
+    vector<vector<double> > coeff{{1, 0, 0, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }, 
+                                  {1, 0, 0, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }};
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
-    forceField -> set_potential_center(vector<double>({0, 0}));
+    forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0}, {0}});
-    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3}));
+    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3, 4, 5}));
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
     Context context(system, integrator, platform);
@@ -143,14 +160,16 @@ void test_3() {
     positions[1] = Vec3(0, 0, 0);
     positions[2] = Vec3(1, 0, 0);
     positions[3] = Vec3(0, 0, 1);
+    positions[4] = Vec3(0.5, 0, 0);
+    positions[5] = Vec3(0, 0, 0.6);
     context.setPositions(positions);
 
     State state = context.getState(State::Forces | State::Energy);
     {
         const vector<Vec3>& forces = state.getForces();
-        ASSERT_EQUAL_VEC(Vec3(110.0, 220.0, 300.0), forces[0], TOL);
-        ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[1], TOL);
-        ASSERT_EQUAL_VEC(Vec3(0, 0, 0), forces[2], TOL);
+        print_Vec3(forces[0]);
+        print_Vec3(forces[1]);
+        print_Vec3(forces[2]);
     }
     return;
 }
@@ -161,7 +180,7 @@ int main(int argc, char* argv[]) {
     try {
         registerKernelFactories();  // this is required
         // test_1();
-        test_sincos_of_dihedrals_four_atom();
+        // test_sincos_of_dihedrals_four_atom();
         // test_forward_and_backward_prop();
         test_3();
     }

@@ -277,7 +277,8 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
         }
     }
 #ifdef DEBUG
-    assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 2);
+    printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
+    assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 4 - 4); // FIXME: correct?
     assert (cos_sin_value.size() == num_of_nodes[0]);
 #endif
     return;

@@ -37,7 +37,7 @@
 // this is the number of layers associated with mapping from data in original space to 
 // principal component space.  If the value is 3, the corresponding ANN network is 5-layer.
 
-#define NUM_OF_BACKBONE_ATOMS 60
+#define NUM_OF_BACKBONE_ATOMS 6
 
 namespace OpenMM {
 
