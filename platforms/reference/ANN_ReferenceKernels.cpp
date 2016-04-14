@@ -117,9 +117,6 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
     get_all_forces_from_derivative_of_first_layer(positionData, forceData, derivatives_of_each_layer[0]);
-#ifdef DEBUG
-    printf("potential energy = %lf\n", update_and_get_potential_energy());
-#endif
     return update_and_get_potential_energy();  
 }
 
@@ -419,7 +416,7 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
         }
     }
 #ifdef DEBUG
-    printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
+    // printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
     assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 4 - 4);
     assert (cos_sin_value.size() == num_of_nodes[0]);
 #endif
@@ -451,8 +448,8 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     // printf("%f\n", sin_value);
 #endif
 #ifdef DEBUG
-    printf("idx_1 = %d, idx_2 = %d, idx_3 = %d, idx_4 = %d\n", idx_1, idx_2, idx_3, idx_4);
-    printf("cos_value = %lf, sin_value = %lf\n", cos_value, sin_value);
+    // printf("idx_1 = %d, idx_2 = %d, idx_3 = %d, idx_4 = %d\n", idx_1, idx_2, idx_3, idx_4);
+    // printf("cos_value = %lf, sin_value = %lf\n", cos_value, sin_value);
     assert (abs(cos_value * cos_value + sin_value * sin_value - 1 ) < 1e-5);
 #endif
     return;
