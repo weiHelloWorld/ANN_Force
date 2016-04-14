@@ -79,6 +79,11 @@ public:
                                                                             vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData,
                                                                             vector<double>& derivatives_of_first_layer);
+
+    void get_all_forces_from_derivative_of_first_layer(vector<RealVec>& positionData,
+                                                                            vector<RealVec>& forceData,
+                                                                            vector<double>& derivatives_of_first_layer);
+
     double update_and_get_potential_energy() {
         potential_energy = 0;
         for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {

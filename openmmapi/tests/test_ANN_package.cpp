@@ -161,7 +161,7 @@ void test_3() {
     positions[2] = Vec3(1, 0, 0);
     positions[3] = Vec3(0, 0, 1);
     positions[4] = Vec3(0.5, 0, 0);
-    positions[5] = Vec3(0, 0, 0.6);
+    positions[5] = Vec3(0, 0.3, 0.6);
     context.setPositions(positions);
 
     State state = context.getState(State::Forces | State::Energy);

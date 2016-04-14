@@ -116,7 +116,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     calculate_output_of_each_layer(cos_sin_value);
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
-    get_force_from_derivative_of_first_layer(0, 1, positionData, forceData, derivatives_of_each_layer[0]); // TODO: here we only include the first dihedral, add others later
+    get_all_forces_from_derivative_of_first_layer(positionData, forceData, derivatives_of_each_layer[0]);
 #ifdef DEBUG
     printf("potential energy = %lf\n", update_and_get_potential_energy());
 #endif
@@ -221,6 +221,15 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
     // }
     // printf("\n");
 #endif
+    return;
+}
+
+void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer(vector<RealVec>& positionData,
+                                                                            vector<RealVec>& forceData,
+                                                                            vector<double>& derivatives_of_first_layer) {
+    for (int ii = 0; ii < num_of_nodes[0] / 2; ii ++ ) {
+        get_force_from_derivative_of_first_layer(2 * ii, 2 * ii + 1, positionData, forceData, derivatives_of_first_layer);
+    }
     return;
 }
 
