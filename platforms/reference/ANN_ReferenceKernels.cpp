@@ -371,8 +371,8 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
                                         * der_of_cos_sin_to_diff[0][3 * ii + jj]
                                         + derivatives_of_first_layer[index_of_sin_node_in_input_layer] 
                                         * der_of_cos_sin_to_diff[1][3 * ii + jj]; 
-            forceData[idx[ii]][jj] += + temp;
-            forceData[idx[ii + 1]][jj] += -temp;
+            forceData[idx[ii]][jj] += - temp;
+            forceData[idx[ii + 1]][jj] += + temp;
 #ifdef DEBUG
             // printf("diff_1 = \n");
             // printf("%f\t%f\t%f\n", diff_1[0], diff_1[1], diff_1[2]);
