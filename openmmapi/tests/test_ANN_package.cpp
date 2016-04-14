@@ -136,7 +136,7 @@ void test_3() {
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
     forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
-    forceField -> set_layer_types(vector<string>({"Linear", "Linear"}));
+    forceField -> set_layer_types(vector<string>({"Linear", "Tanh"}));
     vector<vector<double> > coeff{{1, 0, 0, 0,
                                    0, 1, 0, 0,
                                    0, 0, 1, 0,
