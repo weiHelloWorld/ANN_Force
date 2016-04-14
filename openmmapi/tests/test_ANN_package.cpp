@@ -188,7 +188,7 @@ void test_3() {
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Forces | State::Energy).getPotentialEnergy();
-            printf("potential energy = %lf\n", energy_2);
+            // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }

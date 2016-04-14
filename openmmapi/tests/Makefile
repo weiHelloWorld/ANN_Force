@@ -24,7 +24,7 @@ wrapper:
 	g++ $(CFLAGS) $(INCLUDE_OPTION) \
 	-shared -fPIC -c ANN_wrap.cxx test_ANN_package.cpp && \
 	g++ -shared $(INCLUDE_OPTION) *.o -o _ANN.so \
-	$(LIB_OPTION) -L/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/tests/ -lANN
+	$(LIB_OPTION) -L$(PLUGIN_DIR)/openmmapi/tests/ -lANN
 
 clean:
 	rm test_ANN_Force test_ANN_package _ANN.so libANN.so *.o ANN_wrap.cxx ANN.py* 

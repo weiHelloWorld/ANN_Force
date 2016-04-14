@@ -2,6 +2,7 @@
 #include "../openmmapi/include/OpenMM_ANN.h"
 #include "openmm/Platform.h"
 #include "openmm/PluginInitializer.h"
+#include "../../platforms/reference/ANN_ReferenceKernelFactory.cpp"
 
 #include <cstdio>
 
@@ -21,25 +22,50 @@ void simulateArgon()
     OpenMM::System system;
     // OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce(); 
     // system.addForce(nonbond);
+    int num_of_atoms = 6;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.002);
     ANN_Force* forceField = new ANN_Force();
+    forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
+    forceField -> set_layer_types(vector<string>({"Linear", "Tanh"}));
+    vector<vector<double> > coeff{{1, 0, 0, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }, 
+                                  {1, 0, 0, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }};
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0}, {0}});
+    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3, 4, 5}));
     system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName("Reference");
+    Context context(system, integrator, platform);
 
     // Create three atoms.
-    std::vector<OpenMM::Vec3> initPosInNm(3);
-    for (int a = 0; a < 3; ++a) 
+    std::vector<OpenMM::Vec3> initPosInNm(num_of_atoms);
+    for (int a = 0; a < num_of_atoms; ++a) 
     {
-        initPosInNm[a] = OpenMM::Vec3(0.5*a,0,0); // location, nm
-
         system.addParticle(39.95); // mass of Ar, grams per mole
-
-        // charge, L-J sigma (nm), well depth (kJ)
-        // nonbond->addParticle(0.0, 0.3350, 0.996); // vdWRad(Ar)=.188 nm
     }
+    vector<Vec3> positions_1(num_of_atoms);
+    positions_1[0] = Vec3(-1, -2, -3);
+    positions_1[1] = Vec3(0, 0, 0);
+    positions_1[2] = Vec3(1, 0, 0);
+    positions_1[3] = Vec3(0, 0, 1);
+    positions_1[4] = Vec3(0.5, 0, 0);
+    positions_1[5] = Vec3(0, 0.3, 0.6);
+    context.setPositions(positions_1);
 
-    OpenMM::VerletIntegrator integrator(0.002); // step size in ps
 
     // Let OpenMM Context choose best platform.
-    OpenMM::Context context(system, integrator);
     printf( "REMARK  Using OpenMM platform %s\n", 
         context.getPlatform().getName().c_str() );
 
