@@ -106,7 +106,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_1(vector<RealVec>& positionDa
     forceData[0][0]    += - coef * (positionData[0][0] - 0.1);
     forceData[0][1]    += - coef * (positionData[0][1] - 0.2);
     forceData[0][2]    += - coef * positionData[0][2];
-    return 0;  // TODO: fix this later
+    return 0;  
 }
 
 RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionData, vector<RealVec>& forceData) {
@@ -120,7 +120,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
 #ifdef DEBUG
     printf("potential energy = %lf\n", update_and_get_potential_energy());
 #endif
-    return update_and_get_potential_energy();  // TODO: fix this later
+    return update_and_get_potential_energy();  
 }
 
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
@@ -157,21 +157,21 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     }
 #ifdef DEBUG
     // print out the result for debugging
-    printf("output_of_each_layer = \n");
-    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
-        printf("layer[%d]: ", ii);
-        if (ii != 0) {
-            cout << layer_types[ii - 1] << "\t";    
-        }
-        else {
-            cout << "input \t" ;
-        }
-        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-            printf("%lf\t", output_of_each_layer[ii][jj]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    // printf("output_of_each_layer = \n");
+    // for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+    //     printf("layer[%d]: ", ii);
+    //     if (ii != 0) {
+    //         cout << layer_types[ii - 1] << "\t";    
+    //     }
+    //     else {
+    //         cout << "input \t" ;
+    //     }
+    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+    //         printf("%lf\t", output_of_each_layer[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
 #endif
     return;
 }
@@ -211,15 +211,15 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
     }
 #ifdef DEBUG
     // print out the result for debugging
-    printf("derivatives_of_each_layer = \n");
-    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
-        printf("layer[%d]: ", ii);
-        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-            printf("%lf\t", derivatives_of_each_layer[ii][jj]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    // printf("derivatives_of_each_layer = \n");
+    // for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+    //     printf("layer[%d]: ", ii);
+    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+    //         printf("%lf\t", derivatives_of_each_layer[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
 #endif
     return;
 }
@@ -372,18 +372,16 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     }
 
 #ifdef DEBUG
-    printf("der_of_cos_sin_to_diff = \n");
-    int num_of_rows = 2;
-    int num_of_cols = 9;
-    for (int ii = 0; ii < num_of_rows; ii ++) {
-        for (int jj = 0; jj < num_of_cols; jj ++) {
-            printf("%lf\t", der_of_cos_sin_to_diff[ii][jj]);
-        }
-        printf("\n");
-    }
+    // printf("der_of_cos_sin_to_diff = \n");
+    // int num_of_rows = 2;
+    // int num_of_cols = 9;
+    // for (int ii = 0; ii < num_of_rows; ii ++) {
+    //     for (int jj = 0; jj < num_of_cols; jj ++) {
+    //         printf("%lf\t", der_of_cos_sin_to_diff[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
 #endif
-
-    // TODO
 
     return;
 }
@@ -392,7 +390,7 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
                                                                             vector<RealOpenMM>& cos_sin_value) {
     assert (index_of_backbone_atoms.size() % 3 == 0);
 #ifdef DEBUG
-    printf("size of index_of_backbone_atoms = %lu\n", index_of_backbone_atoms.size());
+    // printf("size of index_of_backbone_atoms = %lu\n", index_of_backbone_atoms.size());
 #endif
     RealOpenMM temp_cos, temp_sin;
     for (int ii = 0; ii < index_of_backbone_atoms.size() / 3; ii ++) {
@@ -413,7 +411,7 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
     }
 #ifdef DEBUG
     printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
-    assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 4 - 4); // FIXME: correct?
+    assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 4 - 4);
     assert (cos_sin_value.size() == num_of_nodes[0]);
 #endif
     return;

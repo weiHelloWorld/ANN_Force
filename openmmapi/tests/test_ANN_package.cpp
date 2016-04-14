@@ -166,19 +166,19 @@ void test_3() {
 
     State state = context.getState(State::Forces | State::Energy);
     {
-        printf("first:\n");
+        printf("forces:\n");
         const vector<Vec3>& forces = state.getForces();
         for (int ii = 0; ii < 6; ii ++) {
             print_Vec3(forces[ii]);
         }
     }
 
-    positions[0] = Vec3(-1, -2.1, -3);
+    positions[1] = Vec3(0, 0.02, 0);
     
     context.setPositions(positions);
     state = context.getState(State::Forces | State::Energy);
     {
-        printf("second:\n");
+        printf("forces:\n");
         const vector<Vec3>& forces = state.getForces();
         for (int ii = 0; ii < 6; ii ++) {
             print_Vec3(forces[ii]);
