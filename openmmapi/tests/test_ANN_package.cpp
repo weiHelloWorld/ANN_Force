@@ -170,6 +170,7 @@ void test_3() {
         print_Vec3(forces[0]);
         print_Vec3(forces[1]);
         print_Vec3(forces[2]);
+        print_Vec3(forces[3]);
     }
     return;
 }
