@@ -126,8 +126,8 @@ void test_forward_and_backward_prop() {
     return;
 }
 
-void test_3() {
-    cout << "running test_3\n";
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives\n";
     System system;
     int num_of_atoms = 6;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -167,14 +167,20 @@ void test_3() {
     double energy_1, energy_2, energy_3;
 
     vector<Vec3> forces;
+    vector<Vec3> temp_positions;
 
-    State state = context.getState(State::Forces | State::Energy);
+    State state = context.getState(State::Forces | State::Energy | State::Positions);
     {
-        printf("forces:\n");
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
+        temp_positions = state.getPositions();
+        printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
+        }
+        printf("positions:\n");
+        for (int ii = 0; ii < num_of_atoms; ii ++) {
+            print_Vec3(temp_positions[ii]);
         }
         printf("potential energy = %lf\n", energy_1);
     }
@@ -187,7 +193,7 @@ void test_3() {
             positions_2 = positions_1;
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
-            energy_2 = context.getState(State::Forces | State::Energy).getPotentialEnergy();
+            energy_2 = context.getState(State::Forces | State::Energy | State::Positions).getPotentialEnergy();
             // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
@@ -209,7 +215,7 @@ int main(int argc, char* argv[]) {
         // test_1();
         // test_sincos_of_dihedrals_four_atom();
         // test_forward_and_backward_prop();
-        test_3();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;

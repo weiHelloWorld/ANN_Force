@@ -151,11 +151,14 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
                 output_of_each_layer[ii][jj] = tanh(temp_input_of_this_layer[jj]);
             }
         }
+        else {
+            printf("layer type not found!\n\n");
+        }
     }
 #ifdef DEBUG
     // print out the result for debugging
     // printf("output_of_each_layer = \n");
-    // for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+    // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
     //     printf("layer[%d]: ", ii);
     //     if (ii != 0) {
     //         cout << layer_types[ii - 1] << "\t";    
@@ -202,6 +205,9 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
                     derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
                                 * coeff[jj][kk][mm] \
                                 * 1;
+                }
+                else {
+                    printf("layer type not found!\n\n");
                 }
             }
         }

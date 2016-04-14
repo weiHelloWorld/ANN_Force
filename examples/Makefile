@@ -11,7 +11,7 @@ LIBS= -lOpenMM
 LIB_OPTION=-L$(LIB_DIR) $(LIBS)
 
 example_1: example_1.cpp
-	g++ $(CFLAGS) $(INCLUDE_OPTION) -o example_1 example_1.cpp $(LIB_OPTION)
+	g++ $(CFLAGS) $(INCLUDE_OPTION) -o example_1 example_1.cpp $(LIB_OPTION) -L$(PLUGIN_DIR)/openmmapi/tests/ -lANN
 
 clean:
 	rm example_1
