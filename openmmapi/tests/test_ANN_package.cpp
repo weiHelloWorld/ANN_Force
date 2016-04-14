@@ -167,10 +167,9 @@ void test_3() {
     State state = context.getState(State::Forces | State::Energy);
     {
         const vector<Vec3>& forces = state.getForces();
-        print_Vec3(forces[0]);
-        print_Vec3(forces[1]);
-        print_Vec3(forces[2]);
-        print_Vec3(forces[3]);
+        for (int ii = 0; ii < 6; ii ++) {
+            print_Vec3(forces[ii]);
+        }
     }
     return;
 }

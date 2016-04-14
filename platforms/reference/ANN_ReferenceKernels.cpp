@@ -352,10 +352,31 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     }
     for (int ii = 0; ii < 3; ii ++) {
         for (int jj = 0; jj < 3 ; jj ++) {
-            forceData[idx[ii]][jj] += + derivatives_of_first_layer[index_of_cos_node_in_input_layer] * der_of_cos_sin_to_diff[0][3 * ii + jj] + derivatives_of_first_layer[index_of_sin_node_in_input_layer] * der_of_cos_sin_to_diff[1][3 * ii + jj]; 
-            forceData[idx[ii + 1]][jj] += -forceData[idx[ii]][jj];
+            auto temp = + derivatives_of_first_layer[index_of_cos_node_in_input_layer] 
+                                        * der_of_cos_sin_to_diff[0][3 * ii + jj]
+                                        + derivatives_of_first_layer[index_of_sin_node_in_input_layer] 
+                                        * der_of_cos_sin_to_diff[1][3 * ii + jj]; 
+            forceData[idx[ii]][jj] += + temp;
+            forceData[idx[ii + 1]][jj] += -temp;
+#ifdef DEBUG
+            printf("temp = %f\n", temp);
+            printf("forceData[%d][%d] = %f\n", idx[ii], jj, forceData[idx[ii]][jj]);
+            printf("forceData[%d][%d] = %f\n", idx[ii + 1], jj, forceData[idx[ii + 1]][jj]);
+#endif
         }
     }
+
+#ifdef DEBUG
+    printf("der_of_cos_sin_to_diff = \n");
+    int num_of_rows = 2;
+    int num_of_cols = 9;
+    for (int ii = 0; ii < num_of_rows; ii ++) {
+        for (int jj = 0; jj < num_of_cols; jj ++) {
+            printf("%lf\t", der_of_cos_sin_to_diff[ii][jj]);
+        }
+        printf("\n");
+    }
+#endif
 
     // TODO
 
