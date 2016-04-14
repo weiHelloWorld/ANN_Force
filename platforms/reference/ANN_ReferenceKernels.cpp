@@ -117,7 +117,10 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
     get_force_from_derivative_of_first_layer(0, 1, positionData, forceData, derivatives_of_each_layer[0]); // TODO: here we only include the first dihedral, add others later
-    return 0;  // TODO: fix this later
+#ifdef DEBUG
+    printf("potential energy = %lf\n", update_and_get_potential_energy());
+#endif
+    return update_and_get_potential_energy();  // TODO: fix this later
 }
 
 RealOpenMM ReferenceCalcANN_ForceKernel::calculateForceAndEnergy(vector<RealVec>& positionData, vector<RealVec>& forceData) {
@@ -359,9 +362,11 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
             forceData[idx[ii]][jj] += + temp;
             forceData[idx[ii + 1]][jj] += -temp;
 #ifdef DEBUG
-            printf("temp = %f\n", temp);
-            printf("forceData[%d][%d] = %f\n", idx[ii], jj, forceData[idx[ii]][jj]);
-            printf("forceData[%d][%d] = %f\n", idx[ii + 1], jj, forceData[idx[ii + 1]][jj]);
+            // printf("diff_1 = \n");
+            // printf("%f\t%f\t%f\n", diff_1[0], diff_1[1], diff_1[2]);
+            // printf("temp = %f\n", temp);
+            // printf("forceData[%d][%d] = %f\n", idx[ii], jj, forceData[idx[ii]][jj]);
+            // printf("forceData[%d][%d] = %f\n", idx[ii + 1], jj, forceData[idx[ii + 1]][jj]);
 #endif
         }
     }

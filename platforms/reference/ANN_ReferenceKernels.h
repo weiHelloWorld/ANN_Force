@@ -79,9 +79,18 @@ public:
                                                                             vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData,
                                                                             vector<double>& derivatives_of_first_layer);
+    double update_and_get_potential_energy() {
+        potential_energy = 0;
+        for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
+            potential_energy += 0.5 * force_constant * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii])
+                                                     * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii]);
+        }
+        return potential_energy;
+    }
 
 
 private:
+    double potential_energy;
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     vector<int> index_of_backbone_atoms = vector<int>(NUM_OF_BACKBONE_ATOMS); 
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix

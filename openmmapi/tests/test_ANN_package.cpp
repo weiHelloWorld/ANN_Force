@@ -166,6 +166,19 @@ void test_3() {
 
     State state = context.getState(State::Forces | State::Energy);
     {
+        printf("first:\n");
+        const vector<Vec3>& forces = state.getForces();
+        for (int ii = 0; ii < 6; ii ++) {
+            print_Vec3(forces[ii]);
+        }
+    }
+
+    positions[0] = Vec3(-1, -2.1, -3);
+    
+    context.setPositions(positions);
+    state = context.getState(State::Forces | State::Energy);
+    {
+        printf("second:\n");
         const vector<Vec3>& forces = state.getForces();
         for (int ii = 0; ii < 6; ii ++) {
             print_Vec3(forces[ii]);
