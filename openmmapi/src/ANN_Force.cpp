@@ -93,23 +93,32 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::ve
 
 void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(std::vector<int>\
                                                                                  index_of_backbone_atoms) {
-    num_of_dihedrals = index_of_backbone_atoms.size() / 3 * 2 - 2;
-    for (int ii = 0; ii < num_of_dihedrals; ii ++) {
-        list_of_index_of_atoms_forming_dihedrals.push_back(std::vector<int>());
-        if (ii % 2 == 0) {
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 0] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 1] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 2] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 3] - 1);
+    int num_of_residues = index_of_backbone_atoms.size() / 3;
+    num_of_dihedrals = num_of_residues * 2 - 2;
+#ifdef DEBUG
+    printf("num_of_dihedrals = %d\n", num_of_dihedrals);
+#endif
+    int count = 0;
+    for (int ii = 0; ii < num_of_residues; ii ++) {
+        if (ii != 0) {
+            list_of_index_of_atoms_forming_dihedrals.push_back(std::vector<int>());
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii - 1] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 0] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 1] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 2] - 1);
+            count ++;
         }
-        else {
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii - 1] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 0] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 1] - 1);
-            list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 2] - 1);
+        if (ii != num_of_residues - 1) {
+            list_of_index_of_atoms_forming_dihedrals.push_back(std::vector<int>());
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 0] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 1] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 2] - 1);
+            list_of_index_of_atoms_forming_dihedrals[count].push_back(index_of_backbone_atoms[3 * ii + 3] - 1);
+            count ++;
         }
     }
 #ifdef DEBUG
+    assert (count == num_of_dihedrals);
     printf("list_of_index_of_atoms_forming_dihedrals = \n");
     for (int ii = 0; ii < num_of_dihedrals; ii ++) {
         for (int jj = 0; jj < 4; jj ++) {
