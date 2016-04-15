@@ -139,11 +139,11 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
     forceField -> set_layer_types(vector<string>({"Linear", "Tanh"}));
     vector<vector<double> > coeff{{1, 0, 0, 0,
-                                   0, 1, 0, 0,
+                                   0, 1, 0, 0.7,
                                    0, 0, 1, 0,
                                    0, 0, 0, 1
                                     }, 
-                                  {1, 0, 0, 0,
+                                  {1, 0, 0.4, 0,
                                    0, 1, 0, 0,
                                    0, 0, 1, 0,
                                    0, 0, 0, 1
