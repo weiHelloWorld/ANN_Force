@@ -39,6 +39,10 @@
 
 #define NUM_OF_BACKBONE_ATOMS 6
 
+// TODO: use better way, instead of macro here
+
+#define NUM_OF_DIHEDRALS 2
+
 namespace OpenMM {
 
 /**
@@ -78,7 +82,12 @@ public:
     const double get_force_constant() const;
 
     void set_force_constant(double temp_force_constant);
+
+    const std::vector<std::vector<int> >& get_list_of_index_of_atoms_forming_dihedrals() const;
+
+    void set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::vector<int> > temp_list_of_index);    
     
+    void set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(std::vector<int> index_of_backbone_atoms);
 
     /**
      * Update the per-bond parameters in a Context to match those stored in this Force object.  This method provides
@@ -105,6 +114,8 @@ protected:
 private:
     std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<int> index_of_backbone_atoms = std::vector<int>(NUM_OF_BACKBONE_ATOMS); 
+    std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals 
+                            = std::vector<std::vector<int> > (NUM_OF_DIHEDRALS); // FIXME: may be error here
     std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
     std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS - 1); // the input layer is not included
     std::vector<std::vector<double> > values_of_biased_nodes = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);

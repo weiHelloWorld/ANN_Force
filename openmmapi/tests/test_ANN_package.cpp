@@ -43,6 +43,7 @@ void print_Vec3(Vec3 temp_vec) {
 }
 
 void test_1() {
+    // this test is for candidate_1()
     cout << "running test_1\n";
     System system;
     int num_of_atoms = 4;
@@ -150,8 +151,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
-    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0}, {0}});
-    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3, 4, 5}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0,0,0,0}, {0,0,0,0}});
+    forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
+    printf("here\n");
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
     Context context(system, integrator, platform);

@@ -40,8 +40,6 @@ import simtk.unit as unit
 class ANN_Force : public OpenMM::Force {
 
 public:
-    ANN_Force() {};
-    
     const std::vector<int>& get_num_of_nodes() const;
 
     void set_num_of_nodes(std::vector<int> num);
@@ -58,23 +56,16 @@ public:
 
     void set_layer_types(std::vector<std::string>  temp_layer_types);
 
+    const std::vector<std::vector<double> >& get_values_of_biased_nodes() const;
 
-    /**
-     * Update the per-bond parameters in a Context to match those stored in this Force object.  This method provides
-     * an efficient method to update certain parameters in an existing Context without needing to reinitialize it.
-     * Simply call setBondParameters() to modify this object's parameters, then call updateParametersInContext()
-     * to copy them over to the Context.
-     * 
-     * The only information this method updates is the values of per-bond parameters.  The set of particles involved
-     * in a bond cannot be changed, nor can new bonds be added.
-     */
-    void updateParametersInContext(Context& context);
-    /**
-     * Returns whether or not this force makes use of periodic boundary
-     * conditions.
-     *
-     * @returns true if nonbondedMethod uses PBC and false otherwise
-     */
-    bool usesPeriodicBoundaryConditions() const;
+    void set_values_of_biased_nodes(std::vector<std::vector<double> > bias);
+
+    const std::vector<double>& get_potential_center() const;
+
+    void set_potential_center(std::vector<double> temp_potential_center);
+
+    const double get_force_constant() const;
+
+    void set_force_constant(double temp_force_constant);
 };
 

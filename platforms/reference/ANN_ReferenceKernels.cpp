@@ -50,6 +50,7 @@ ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
     index_of_backbone_atoms = force.get_index_of_backbone_atoms();
+    list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
     layer_types = force.get_layer_types();
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
@@ -250,18 +251,22 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     // first work with cos value
     int idx[4]; // indices of four atoms forming this dihedral
     int index_of_dihedral = index_of_cos_node_in_input_layer / 2;
-    if (index_of_dihedral % 2 == 0) {
-        idx[0] = index_of_backbone_atoms[3 * index_of_dihedral];
-        idx[1] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
-        idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
-        idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 3];
+    for (int ii = 0; ii < 4; ii ++) {
+        idx[ii] = list_of_index_of_atoms_forming_dihedrals[index_of_dihedral][ii];
     }
-    else {
-        idx[0] = index_of_backbone_atoms[3 * index_of_dihedral - 1];
-        idx[1] = index_of_backbone_atoms[3 * index_of_dihedral];
-        idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
-        idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
-    }
+    
+    // if (index_of_dihedral % 2 == 0) {
+    //     idx[0] = index_of_backbone_atoms[3 * index_of_dihedral];
+    //     idx[1] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
+    //     idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
+    //     idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 3];
+    // }
+    // else {
+    //     idx[0] = index_of_backbone_atoms[3 * index_of_dihedral - 1];
+    //     idx[1] = index_of_backbone_atoms[3 * index_of_dihedral];
+    //     idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
+    //     idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
+    // }
 
     RealVec diff_1 = positionData[idx[0]] - positionData[idx[1]];
     RealVec diff_2 = positionData[idx[1]] - positionData[idx[2]];
@@ -400,31 +405,21 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData,
                                                                             vector<RealOpenMM>& cos_sin_value) {
-    assert (index_of_backbone_atoms.size() % 3 == 0);
-#ifdef DEBUG
-    // printf("size of index_of_backbone_atoms = %lu\n", index_of_backbone_atoms.size());
-#endif
+    // assert (index_of_backbone_atoms.size() % 3 == 0);
     RealOpenMM temp_cos, temp_sin;
-    for (int ii = 0; ii < index_of_backbone_atoms.size() / 3; ii ++) {
-        if (ii != 0) {
-            get_cos_and_sin_for_four_atoms(index_of_backbone_atoms[3 * ii - 1], index_of_backbone_atoms[3 * ii], 
-                                            index_of_backbone_atoms[3 * ii + 1], index_of_backbone_atoms[3 * ii + 2], 
-                                            positionData, temp_cos, temp_sin);
-            cos_sin_value.push_back(temp_cos);
-            cos_sin_value.push_back(temp_sin);
-        }
-        if (ii != index_of_backbone_atoms.size() / 3 - 1) {
-            get_cos_and_sin_for_four_atoms(index_of_backbone_atoms[3 * ii], index_of_backbone_atoms[3 * ii + 1], 
-                                            index_of_backbone_atoms[3 * ii + 2], index_of_backbone_atoms[3 * ii + 3], 
-                                            positionData, temp_cos, temp_sin);
-            cos_sin_value.push_back(temp_cos);
-            cos_sin_value.push_back(temp_sin);
-        }
+    for (int ii = 0; ii < list_of_index_of_atoms_forming_dihedrals.size(); ii ++) {
+        get_cos_and_sin_for_four_atoms(list_of_index_of_atoms_forming_dihedrals[ii][0],
+                                       list_of_index_of_atoms_forming_dihedrals[ii][1],
+                                       list_of_index_of_atoms_forming_dihedrals[ii][2],
+                                       list_of_index_of_atoms_forming_dihedrals[ii][3], 
+                                       positionData, temp_cos, temp_sin);
+        cos_sin_value.push_back(temp_cos);
+        cos_sin_value.push_back(temp_sin);
     }
 #ifdef DEBUG
-    // printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
-    assert (cos_sin_value.size() == index_of_backbone_atoms.size() / 3 * 4 - 4);
+    printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
     assert (cos_sin_value.size() == num_of_nodes[0]);
+    assert (cos_sin_value.size() == list_of_index_of_atoms_forming_dihedrals.size() * 2);
 #endif
     return;
 }
