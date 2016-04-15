@@ -157,20 +157,20 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     }
 #ifdef DEBUG
     // print out the result for debugging
-    printf("output_of_each_layer = \n");
-    for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
-        printf("layer[%d]: ", ii);
-        if (ii != 0) {
-            cout << layer_types[ii - 1] << "\t";    
-        }
-        else {
-            cout << "input \t" ;
-        }
-        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-            printf("%lf\t", output_of_each_layer[ii][jj]);
-        }
-        printf("\n");
-    }
+    // printf("output_of_each_layer = \n");
+    // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
+    //     printf("layer[%d]: ", ii);
+    //     if (ii != 0) {
+    //         cout << layer_types[ii - 1] << "\t";    
+    //     }
+    //     else {
+    //         cout << "input \t" ;
+    //     }
+    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+    //         printf("%lf\t", output_of_each_layer[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
     // printf("\n");
 #endif
     return;

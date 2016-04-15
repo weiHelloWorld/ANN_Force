@@ -108,8 +108,8 @@ void test_forward_and_backward_prop() {
     forceField -> set_force_constant(10);
     forcekernel -> initialize(system, *forceField);
     auto temp_coef = forcekernel -> get_coeff();
-    print_matrix(temp_coef[0], 3, 2);
-    print_matrix(temp_coef[1], 1, 3);
+    // print_matrix(temp_coef[0], 3, 2);
+    // print_matrix(temp_coef[1], 1, 3);
     vector<RealOpenMM> input{1,2};
     forcekernel -> calculate_output_of_each_layer(input);
     auto actual_output_of_layer = forcekernel -> get_output_of_each_layer();
@@ -121,9 +121,9 @@ void test_forward_and_backward_prop() {
     }
     vector<vector<double> > result;
     forcekernel -> back_prop(result);
-    print_vector(result[0], 2);
-    print_vector(result[1], 3);
-    print_vector(result[2], 1);
+    // print_vector(result[0], 2);
+    // print_vector(result[1], 3);
+    // print_vector(result[2], 1);
     return;
 }
 
@@ -153,7 +153,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0,0,0,0}, {0,0,0,0}});
     forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
-    printf("here\n");
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
     Context context(system, integrator, platform);
@@ -180,14 +179,14 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
-        printf("positions:\n");
-        for (int ii = 0; ii < num_of_atoms; ii ++) {
-            print_Vec3(temp_positions[ii]);
-        }
-        printf("potential energy = %lf\n", energy_1);
+        // printf("positions:\n");
+        // for (int ii = 0; ii < num_of_atoms; ii ++) {
+        //     print_Vec3(temp_positions[ii]);
+        // }
+        // printf("potential energy = %lf\n", energy_1);
     }
 
-    double delta = 0.02;
+    double delta = 0.01;
     auto positions_2 = positions_1;
     auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -216,7 +215,7 @@ int main(int argc, char* argv[]) {
         registerKernelFactories();  // this is required
         // test_1();
         // test_sincos_of_dihedrals_four_atom();
-        // test_forward_and_backward_prop();
+        test_forward_and_backward_prop();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();
     }
     catch(const exception& e) {
