@@ -41,7 +41,6 @@
 
 // TODO: use better way, instead of macro here
 
-#define NUM_OF_DIHEDRALS 2
 
 namespace OpenMM {
 
@@ -114,13 +113,13 @@ protected:
 private:
     std::vector<int> num_of_nodes = std::vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<int> index_of_backbone_atoms = std::vector<int>(NUM_OF_BACKBONE_ATOMS); 
-    std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals 
-                            = std::vector<std::vector<int> > (NUM_OF_DIHEDRALS); // FIXME: may be error here
+    std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals;
     std::vector<std::vector<double> > coeff = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);  // TODO: use better implementations?
     std::vector<std::string> layer_types = std::vector<std::string>(NUM_OF_LAYERS - 1); // the input layer is not included
     std::vector<std::vector<double> > values_of_biased_nodes = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
     std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
     double force_constant;
+    int num_of_dihedrals;
 };
 
 

@@ -49,7 +49,6 @@ ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
 
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
-    index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
     layer_types = force.get_layer_types();
     values_of_biased_nodes = force.get_values_of_biased_nodes();
@@ -158,20 +157,20 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     }
 #ifdef DEBUG
     // print out the result for debugging
-    // printf("output_of_each_layer = \n");
-    // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
-    //     printf("layer[%d]: ", ii);
-    //     if (ii != 0) {
-    //         cout << layer_types[ii - 1] << "\t";    
-    //     }
-    //     else {
-    //         cout << "input \t" ;
-    //     }
-    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-    //         printf("%lf\t", output_of_each_layer[ii][jj]);
-    //     }
-    //     printf("\n");
-    // }
+    printf("output_of_each_layer = \n");
+    for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
+        printf("layer[%d]: ", ii);
+        if (ii != 0) {
+            cout << layer_types[ii - 1] << "\t";    
+        }
+        else {
+            cout << "input \t" ;
+        }
+        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+            printf("%lf\t", output_of_each_layer[ii][jj]);
+        }
+        printf("\n");
+    }
     // printf("\n");
 #endif
     return;
@@ -255,18 +254,6 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
         idx[ii] = list_of_index_of_atoms_forming_dihedrals[index_of_dihedral][ii];
     }
     
-    // if (index_of_dihedral % 2 == 0) {
-    //     idx[0] = index_of_backbone_atoms[3 * index_of_dihedral];
-    //     idx[1] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
-    //     idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
-    //     idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 3];
-    // }
-    // else {
-    //     idx[0] = index_of_backbone_atoms[3 * index_of_dihedral - 1];
-    //     idx[1] = index_of_backbone_atoms[3 * index_of_dihedral];
-    //     idx[2] = index_of_backbone_atoms[3 * index_of_dihedral + 1];
-    //     idx[3] = index_of_backbone_atoms[3 * index_of_dihedral + 2];
-    // }
 
     RealVec diff_1 = positionData[idx[0]] - positionData[idx[1]];
     RealVec diff_2 = positionData[idx[1]] - positionData[idx[2]];
@@ -405,7 +392,6 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vector<RealVec>& positionData,
                                                                             vector<RealOpenMM>& cos_sin_value) {
-    // assert (index_of_backbone_atoms.size() % 3 == 0);
     RealOpenMM temp_cos, temp_sin;
     for (int ii = 0; ii < list_of_index_of_atoms_forming_dihedrals.size(); ii ++) {
         get_cos_and_sin_for_four_atoms(list_of_index_of_atoms_forming_dihedrals[ii][0],
@@ -417,7 +403,7 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
         cos_sin_value.push_back(temp_sin);
     }
 #ifdef DEBUG
-    printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
+    // printf("cos_sin_value.size() = %d, num_of_nodes[0] = %d\n", cos_sin_value.size(), num_of_nodes[0]);
     assert (cos_sin_value.size() == num_of_nodes[0]);
     assert (cos_sin_value.size() == list_of_index_of_atoms_forming_dihedrals.size() * 2);
 #endif

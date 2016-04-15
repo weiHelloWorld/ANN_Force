@@ -80,9 +80,11 @@ const std::vector<std::vector<int> >& ANN_Force::get_list_of_index_of_atoms_form
 }
 
 void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::vector<int> > temp_list_of_index) {
-    for (int ii = 0; ii < NUM_OF_DIHEDRALS; ii ++) {
+    num_of_dihedrals = temp_list_of_index.size();
+    for (int ii = 0; ii < num_of_dihedrals; ii ++) {
+        list_of_index_of_atoms_forming_dihedrals.push_back(std::vector<int>());
         for (int jj = 0; jj < 4; jj ++) {
-            list_of_index_of_atoms_forming_dihedrals[ii][jj] = temp_list_of_index[ii][jj] - 1; 
+            list_of_index_of_atoms_forming_dihedrals[ii].push_back(temp_list_of_index[ii][jj] - 1);
             // should "-1", because in PDB file, the index starts from 1
         }
     }
@@ -91,7 +93,9 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::ve
 
 void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(std::vector<int>\
                                                                                  index_of_backbone_atoms) {
-    for (int ii = 0; ii < NUM_OF_DIHEDRALS; ii ++) {
+    num_of_dihedrals = index_of_backbone_atoms.size() / 3 * 2 - 2;
+    for (int ii = 0; ii < num_of_dihedrals; ii ++) {
+        list_of_index_of_atoms_forming_dihedrals.push_back(std::vector<int>());
         if (ii % 2 == 0) {
             list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 0] - 1);
             list_of_index_of_atoms_forming_dihedrals[ii].push_back(index_of_backbone_atoms[3 * ii + 1] - 1);
@@ -107,7 +111,7 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backb
     }
 #ifdef DEBUG
     printf("list_of_index_of_atoms_forming_dihedrals = \n");
-    for (int ii = 0; ii < NUM_OF_DIHEDRALS; ii ++) {
+    for (int ii = 0; ii < num_of_dihedrals; ii ++) {
         for (int jj = 0; jj < 4; jj ++) {
             printf("%d\t", list_of_index_of_atoms_forming_dihedrals[ii][jj]);
         }

@@ -15,6 +15,7 @@ namespace std {
   %template(double_vector) vector<double>;
   %template(int_vector) vector<int>;
   %template(d_double_vector) vector<vector<double> >;
+  %template(d_int_vector) vector<vector<int> >;
   %template(string_vector) vector<string>;
 };
 
@@ -67,5 +68,12 @@ public:
     const double get_force_constant() const;
 
     void set_force_constant(double temp_force_constant);
+
+    const std::vector<std::vector<int> >& get_list_of_index_of_atoms_forming_dihedrals() const;
+
+    void set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::vector<int> > temp_list_of_index);    
+    
+    void set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(std::vector<int> index_of_backbone_atoms);
+
 };
 

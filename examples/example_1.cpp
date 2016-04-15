@@ -52,7 +52,7 @@ void simulateArgon()
     forceField -> set_force_constant(100);
     forceField -> set_potential_center(vector<double>({tanh(0.9), tanh(0.44), tanh(-0.6), tanh(0.8)}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0}, {0}});
-    forceField -> set_index_of_backbone_atoms(vector<int>({0, 1, 2, 3, 4, 5}));
+    forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
     Context context(system, integrator, platform);
