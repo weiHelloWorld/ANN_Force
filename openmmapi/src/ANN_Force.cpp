@@ -95,9 +95,7 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backb
                                                                                  index_of_backbone_atoms) {
     int num_of_residues = index_of_backbone_atoms.size() / 3;
     num_of_dihedrals = num_of_residues * 2 - 2;
-#ifdef DEBUG
-    printf("num_of_dihedrals = %d\n", num_of_dihedrals);
-#endif
+    
     int count = 0;
     for (int ii = 0; ii < num_of_residues; ii ++) {
         if (ii != 0) {
@@ -119,13 +117,13 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backb
     }
 #ifdef DEBUG
     assert (count == num_of_dihedrals);
-    printf("list_of_index_of_atoms_forming_dihedrals = \n");
-    for (int ii = 0; ii < num_of_dihedrals; ii ++) {
-        for (int jj = 0; jj < 4; jj ++) {
-            printf("%d\t", list_of_index_of_atoms_forming_dihedrals[ii][jj]);
-        }
-        printf("\n");
-    }
+    // printf("list_of_index_of_atoms_forming_dihedrals = \n");
+    // for (int ii = 0; ii < num_of_dihedrals; ii ++) {
+    //     for (int jj = 0; jj < 4; jj ++) {
+    //         printf("%d\t", list_of_index_of_atoms_forming_dihedrals[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
 #endif
     return;
 }

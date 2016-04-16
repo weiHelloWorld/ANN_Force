@@ -62,8 +62,10 @@ integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
 simulation = Simulation(pdb.topology, system, integrator)
 simulation.context.setPositions(pdb.positions)
 
-
+print('begin Minimizing energy...')
 simulation.minimizeEnergy()
+print('Done minimizing energy.')
+
 simulation.reporters.append(PDBReporter(pdb_reporter_file, record_interval))
 simulation.reporters.append(StateDataReporter(state_data_reporter_file, record_interval, step=True, potentialEnergy=True, temperature=True))
 simulation.step(total_number_of_steps)

@@ -158,19 +158,19 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
 #ifdef DEBUG
     // print out the result for debugging
     // printf("output_of_each_layer = \n");
-    for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
-        printf("layer[%d]: ", ii);
-        if (ii != 0) {
-            cout << layer_types[ii - 1] << "\t";    
-        }
-        else {
-            cout << "input \t" ;
-        }
-        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-            printf("%lf\t", output_of_each_layer[ii][jj]);
-        }
-        printf("\n");
-    }
+    // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
+    //     printf("layer[%d]: ", ii);
+    //     if (ii != 0) {
+    //         cout << layer_types[ii - 1] << "\t";    
+    //     }
+    //     else {
+    //         cout << "input \t" ;
+    //     }
+    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+    //         printf("%lf\t", output_of_each_layer[ii][jj]);
+    //     }
+    //     printf("\n");
+    // }
     // printf("\n");
 #endif
     return;
@@ -436,8 +436,11 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
 #endif
 #ifdef DEBUG
     // printf("idx_1 = %d, idx_2 = %d, idx_3 = %d, idx_4 = %d\n", idx_1, idx_2, idx_3, idx_4);
-    // printf("cos_value = %lf, sin_value = %lf\n", cos_value, sin_value);
-    assert (abs(cos_value * cos_value + sin_value * sin_value - 1 ) < 1e-5);
+    if (abs(cos_value * cos_value + sin_value * sin_value - 1 ) > 1e-5) {
+        printf("cos_value = %lf, sin_value = %lf\n", cos_value, sin_value);
+        return;
+    }
+
 #endif
     return;
 }
