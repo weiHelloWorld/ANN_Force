@@ -30,7 +30,9 @@ wrapper: package
 
 install: wrapper
 	sudo mv libANN.so $(PLUGIN_DIR) && \
-	mv _ANN.so $(PYTHON_PACKAGE_DIR)
+	mv _ANN.so $(PYTHON_PACKAGE_DIR) && \
+	echo "========================================" &&\
+	echo "please add $(PLUGIN_DIR) and related directories into LD_LIBRARY_PATH, an example is: export LD_LIBRARY_PATH=/usr/local/openmm/lib:/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/tests/:/home/fisiksnju/openmmexampleplugin/build/:/usr/local/openmm/lib/plugins"
 	
 clean:
 	rm test_ANN_Force test_ANN_package _ANN.so libANN.so *.o ANN_wrap.cxx ANN.py* 
