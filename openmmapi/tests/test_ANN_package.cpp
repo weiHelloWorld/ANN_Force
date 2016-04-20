@@ -137,7 +137,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
     forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
-    forceField -> set_layer_types(vector<string>({"Linear", "Tanh"}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
     vector<vector<double> > coeff{{1, 0, 0, 0,
                                    0, 1, 0, 0.7,
                                    0, 0, 1, 0,
@@ -194,7 +194,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
             positions_2 = positions_1;
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
-            energy_2 = context.getState(State::Forces | State::Energy | State::Positions).getPotentialEnergy();
+            energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
             // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }

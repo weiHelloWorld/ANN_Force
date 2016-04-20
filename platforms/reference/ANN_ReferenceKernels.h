@@ -85,11 +85,25 @@ public:
                                                                             vector<double>& derivatives_of_first_layer);
 
     double update_and_get_potential_energy() {
+        // FIXME: fix for circular layer
         potential_energy = 0;
-        for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
-            potential_energy += 0.5 * force_constant * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii])
-                                                     * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii]);
+        if (layer_types[NUM_OF_LAYERS - 2] != "Circular") {
+            for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
+                potential_energy += 0.5 * force_constant * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii])
+                                                         * (output_of_each_layer[NUM_OF_LAYERS - 1][ii] - potential_center[ii]);
+            }
         }
+        else {
+            for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1] / 2; ii ++) {
+                double cos_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii];
+                double sin_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1];
+                int sign = sin_value > 0 ? 1 : -1;
+                double angle = acos(cos_value) * sign;
+                potential_energy += 0.5 * force_constant * (angle - potential_center[ii]) \
+                                                         * (angle - potential_center[ii]);
+            }
+        }
+        
         return potential_energy;
     }
 

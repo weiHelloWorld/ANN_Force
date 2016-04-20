@@ -164,6 +164,13 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
                                     +input_of_each_layer[ii][2 * jj + 1] * input_of_each_layer[ii][2 * jj + 1]);
                 output_of_each_layer[ii][2 * jj] = input_of_each_layer[ii][2 * jj] / radius;
                 output_of_each_layer[ii][2 * jj + 1] = input_of_each_layer[ii][2 * jj + 1] / radius;
+#ifdef DEBUG
+                if (abs(output_of_each_layer[ii][2 * jj] * output_of_each_layer[ii][2 * jj]
+                      + output_of_each_layer[ii][2 * jj + 1] * output_of_each_layer[ii][2 * jj + 1] - 1) > 1e-5) {
+                    printf("error: two values are %lf, %lf\n", output_of_each_layer[ii][2 * jj], 
+                                                               output_of_each_layer[ii][2 * jj + 1]);
+                }
+#endif
             }
         }
         else {
@@ -195,23 +202,42 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
 void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivatives_of_each_layer) {
     derivatives_of_each_layer = output_of_each_layer;  // the data structure and size should be the same, so I simply deep copy it
     // first calculate derivatives for bottleneck layer
-    for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
-        derivatives_of_each_layer[NUM_OF_LAYERS - 1][ii] = (output_of_each_layer[NUM_OF_LAYERS - 1][ii] \
-                                                                - potential_center[ii]) * force_constant;
+    if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
+        for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1]; ii ++) {
+            derivatives_of_each_layer[NUM_OF_LAYERS - 1][ii] = (output_of_each_layer[NUM_OF_LAYERS - 1][ii] \
+                                                                    - potential_center[ii]) * force_constant;
+        }
     }
+    else {
+        // FIXME: fix for circular layer
+        for (int ii = 0; ii < num_of_nodes[NUM_OF_LAYERS - 1] / 2; ii ++) {
+#ifdef DEBUG
+            assert(output_of_each_layer[NUM_OF_LAYERS - 1].size() == 2 * potential_center.size());
+#endif
+            double cos_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii];
+            double sin_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1];
+            int sign = sin_value > 0 ? 1 : -1;
+            double angle = acos(cos_value) * sign;
+            derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii] = force_constant * (angle - potential_center[ii]) * (-1)\
+                                                         / sqrt(1 - cos_value * cos_value);
+            derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1] = 0;  // FIXME: may I set it to be simply 0?
+        }
+    }
+    
     // the use back propagation to calculate derivatives for previous layers
     for (int jj = NUM_OF_LAYERS - 2; jj >= 0; jj --) {
         if (layer_types[jj] == string("Circular")) {
             vector<double> temp_derivative_of_input_for_this_layer;
             temp_derivative_of_input_for_this_layer.resize(num_of_nodes[jj + 1]);
-
+#ifdef DEBUG
             assert (num_of_nodes[jj + 1] % 2 == 0);
+#endif
             // first calculate the derivative of input from derivative of output of this circular layer
             for(int ii = 0; ii < num_of_nodes[jj + 1] / 2; ii ++) {
-                double radius = sqrt(input_of_each_layer[jj][2 * ii] * input_of_each_layer[jj][2 * ii] 
-                                   + input_of_each_layer[jj][2 * ii + 1] * input_of_each_layer[jj][2 * ii + 1]);
                 double x_p = input_of_each_layer[jj][2 * ii];
                 double x_q = input_of_each_layer[jj][2 * ii + 1];
+                double radius = sqrt(x_p * x_p + x_q * x_q);
+
                 temp_derivative_of_input_for_this_layer[2 * ii] = x_q / (radius * radius * radius) 
                                                         * (x_q * derivatives_of_each_layer[jj + 1][2 * ii] 
                                                         - x_p * derivatives_of_each_layer[jj + 1][2 * ii + 1]);
@@ -219,15 +245,25 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
                                                         * (x_p * derivatives_of_each_layer[jj + 1][2 * ii + 1] 
                                                         - x_q * derivatives_of_each_layer[jj + 1][2 * ii]);
             }
+#ifdef DEBUG
+            for (int mm = 0; mm < num_of_nodes[jj + 1]; mm ++) {
+                // printf("temp_derivative_of_input_for_this_layer[%d] = %lf\n", mm, temp_derivative_of_input_for_this_layer[mm]);
+                // printf("derivatives_of_each_layer[%d + 1][%d] = %lf\n", jj, mm, derivatives_of_each_layer[jj + 1][mm]);
+            }
+#endif
             // the calculate the derivative of output of layer jj, from derivative of input of layer (jj + 1)
             for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
                 derivatives_of_each_layer[jj][mm] = 0;
                 for (int kk = 0; kk < num_of_nodes[jj + 1]; kk ++) {
                         derivatives_of_each_layer[jj][mm] += coeff[jj][kk][mm] \
                                                             * temp_derivative_of_input_for_this_layer[kk];
+#ifdef DEBUG
+                        // printf("derivatives_of_each_layer[%d][%d] = %lf\n", jj, mm, derivatives_of_each_layer[jj][mm]);
+                        // printf("coeff[%d][%d][%d] = %lf\n", jj, kk, mm, coeff[jj][kk][mm]);
+#endif
                 }
             } 
-                    
+            // FIXME: some problem here      
         }
         else {
             for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
