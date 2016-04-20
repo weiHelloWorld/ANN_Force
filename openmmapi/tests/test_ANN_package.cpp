@@ -208,6 +208,81 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     return;
 }
 
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer() {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer\n";
+    System system;
+    int num_of_atoms = 6;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.01);
+    ANN_Force* forceField = new ANN_Force();
+    forceField -> set_num_of_nodes(vector<int>({4, 4, 4}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Circular"}));
+    vector<vector<double> > coeff{{1, 0, 0, 0,
+                                   0, 1, 0, 0.7,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }, 
+                                  {1, 0, 0.4, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }};
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_potential_center(vector<double>({0, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0,0,0,0}, {0,0,0,0}});
+    forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
+    system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName("Reference");
+    Context context(system, integrator, platform);
+    vector<Vec3> positions_1(num_of_atoms);
+    positions_1[0] = Vec3(-1, -2, -3);
+    positions_1[1] = Vec3(0, 0, 0);
+    positions_1[2] = Vec3(1, 0, 0);
+    positions_1[3] = Vec3(0, 0, 1);
+    positions_1[4] = Vec3(0.5, 0, 0);
+    positions_1[5] = Vec3(0, 0.3, 0.6);
+    context.setPositions(positions_1);
+
+    double energy_1, energy_2, energy_3;
+
+    vector<Vec3> forces;
+    vector<Vec3> temp_positions;
+
+    State state = context.getState(State::Forces | State::Energy | State::Positions);
+    {
+        forces = state.getForces();
+        energy_1 = state.getPotentialEnergy();
+        temp_positions = state.getPositions();
+        printf("forces:\n");
+        for (int ii = 0; ii < num_of_atoms; ii ++) {
+            print_Vec3(forces[ii]);
+        }
+    }
+
+    double delta = 0.01;
+    auto positions_2 = positions_1;
+    auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        for (int jj = 0; jj < 3; jj ++) {
+            positions_2 = positions_1;
+            positions_2[ii][jj] += delta;
+            context.setPositions(positions_2);
+            energy_2 = context.getState(State::Forces | State::Energy | State::Positions).getPotentialEnergy();
+            // printf("potential energy = %lf\n", energy_2);
+            numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
+        }
+    }
+    // print out numerical results
+    printf("numerical_derivatives = \n");
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        print_Vec3(numerical_derivatives[ii]);
+    }
+    
+    return;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -217,6 +292,7 @@ int main(int argc, char* argv[]) {
         // test_sincos_of_dihedrals_four_atom();
         test_forward_and_backward_prop();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;

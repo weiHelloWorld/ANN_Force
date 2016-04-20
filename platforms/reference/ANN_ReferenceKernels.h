@@ -100,7 +100,8 @@ private:
     std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals;
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
     vector<string> layer_types = vector<string>(NUM_OF_LAYERS - 1);
-    vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS); // do we need to include input_of_each_layer as well?
+    vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
+    vector<vector<double> > input_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
     vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);
     std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
     double force_constant;

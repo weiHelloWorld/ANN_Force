@@ -54,7 +54,13 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
     force_constant = force.get_force_constant();
-    assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
+    if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
+        assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
+    }
+    else {
+        assert (potential_center.size() * 2 == num_of_nodes[NUM_OF_LAYERS - 1]);
+    }
+    
     // now deal with coefficients of connections
     auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
@@ -131,28 +137,38 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     output_of_each_layer[0] = input;
     // following layers
     for(int ii = 1; ii < NUM_OF_LAYERS; ii ++) {
-        vector<double> temp_input_of_this_layer = vector<double>(num_of_nodes[ii]);
         output_of_each_layer[ii].resize(num_of_nodes[ii]);
+        input_of_each_layer[ii].resize(num_of_nodes[ii]);
         // first calculate input
         for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-            temp_input_of_this_layer[jj] = values_of_biased_nodes[ii - 1][jj];  // add bias term
+            input_of_each_layer[ii][jj] = values_of_biased_nodes[ii - 1][jj];  // add bias term
             for (int kk = 0; kk < num_of_nodes[ii - 1]; kk ++) {
-                temp_input_of_this_layer[jj] += coeff[ii - 1][jj][kk] * output_of_each_layer[ii - 1][kk];
+                input_of_each_layer[ii][jj] += coeff[ii - 1][jj][kk] * output_of_each_layer[ii - 1][kk];
             }
         }
         // then get output
         if (layer_types[ii - 1] == string("Linear")) {
             for(int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-                output_of_each_layer[ii][jj] = temp_input_of_this_layer[jj];
+                output_of_each_layer[ii][jj] = input_of_each_layer[ii][jj];
             }
         }
         else if (layer_types[ii - 1] == string("Tanh")) {
             for(int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-                output_of_each_layer[ii][jj] = tanh(temp_input_of_this_layer[jj]);
+                output_of_each_layer[ii][jj] = tanh(input_of_each_layer[ii][jj]);
+            }
+        }
+        else if (layer_types[ii - 1] == string("Circular")) {
+            assert (num_of_nodes[ii] % 2 == 0);
+            for(int jj = 0; jj < num_of_nodes[ii] / 2; jj ++) {
+                double radius = sqrt(input_of_each_layer[ii][2 * jj] * input_of_each_layer[ii][2 * jj] 
+                                    +input_of_each_layer[ii][2 * jj + 1] * input_of_each_layer[ii][2 * jj + 1]);
+                output_of_each_layer[ii][2 * jj] = input_of_each_layer[ii][2 * jj] / radius;
+                output_of_each_layer[ii][2 * jj + 1] = input_of_each_layer[ii][2 * jj + 1] / radius;
             }
         }
         else {
             printf("layer type not found!\n\n");
+            return;
         }
     }
 #ifdef DEBUG
@@ -185,29 +201,54 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
     }
     // the use back propagation to calculate derivatives for previous layers
     for (int jj = NUM_OF_LAYERS - 2; jj >= 0; jj --) {
-        for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
-            derivatives_of_each_layer[jj][mm] = 0;
-            for (int kk = 0; kk < num_of_nodes[jj + 1]; kk ++) {
-                if (layer_types[jj] == string("Tanh")) {
-                    // printf("tanh\n");
-                    derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
-                                * coeff[jj][kk][mm] \
-                                * (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]);
-#ifdef DEBUG
-                    // printf("this:\n");
-                    // printf("%lf\n", derivatives_of_each_layer[jj + 1][kk]);
-                    // printf("%lf\n", coeff[jj][kk][mm]);
-                    // printf("%lf\n", (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]));
-#endif
+        if (layer_types[jj] == string("Circular")) {
+            vector<double> temp_derivative_of_input_for_this_layer;
+            temp_derivative_of_input_for_this_layer.resize(num_of_nodes[jj + 1]);
+
+            assert (num_of_nodes[jj + 1] % 2 == 0);
+            // first calculate the derivative of input from derivative of output of this circular layer
+            for(int ii = 0; ii < num_of_nodes[jj + 1] / 2; ii ++) {
+                double radius = sqrt(input_of_each_layer[jj][2 * ii] * input_of_each_layer[jj][2 * ii] 
+                                   + input_of_each_layer[jj][2 * ii + 1] * input_of_each_layer[jj][2 * ii + 1]);
+                double x_p = input_of_each_layer[jj][2 * ii];
+                double x_q = input_of_each_layer[jj][2 * ii + 1];
+                temp_derivative_of_input_for_this_layer[2 * ii] = x_q / (radius * radius * radius) 
+                                                        * (x_q * derivatives_of_each_layer[jj + 1][2 * ii] 
+                                                        - x_p * derivatives_of_each_layer[jj + 1][2 * ii + 1]);
+                temp_derivative_of_input_for_this_layer[2 * ii + 1] = x_p / (radius * radius * radius) 
+                                                        * (x_p * derivatives_of_each_layer[jj + 1][2 * ii + 1] 
+                                                        - x_q * derivatives_of_each_layer[jj + 1][2 * ii]);
+            }
+            // the calculate the derivative of output of layer jj, from derivative of input of layer (jj + 1)
+            for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
+                derivatives_of_each_layer[jj][mm] = 0;
+                for (int kk = 0; kk < num_of_nodes[jj + 1]; kk ++) {
+                        derivatives_of_each_layer[jj][mm] += coeff[jj][kk][mm] \
+                                                            * temp_derivative_of_input_for_this_layer[kk];
                 }
-                else if (layer_types[jj] == string("Linear")) {
-                    // printf("linear\n");
-                    derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
-                                * coeff[jj][kk][mm] \
-                                * 1;
-                }
-                else {
-                    printf("layer type not found!\n\n");
+            } 
+                    
+        }
+        else {
+            for (int mm = 0; mm < num_of_nodes[jj]; mm ++) {
+                derivatives_of_each_layer[jj][mm] = 0;
+                for (int kk = 0; kk < num_of_nodes[jj + 1]; kk ++) {
+                    if (layer_types[jj] == string("Tanh")) {
+                        // printf("tanh\n");
+                        derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
+                                    * coeff[jj][kk][mm] \
+                                    * (1 - output_of_each_layer[jj + 1][kk] * output_of_each_layer[jj + 1][kk]);
+                    }
+                    else if (layer_types[jj] == string("Linear")) {
+                        // printf("linear\n");
+                        derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
+                                    * coeff[jj][kk][mm] \
+                                    * 1;
+                    }
+                    else {
+                        printf("layer type not found!\n\n");
+                        return;
+                    }
                 }
             }
         }
