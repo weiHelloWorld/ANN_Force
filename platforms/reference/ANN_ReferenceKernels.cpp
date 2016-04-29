@@ -218,7 +218,18 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
             double sin_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1];
             int sign = sin_value > 0 ? 1 : -1;
             double angle = acos(cos_value) * sign;
-            derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii] = force_constant * (angle - potential_center[ii]) * (-1)\
+            double angle_distance_1 = angle - potential_center[ii];
+            double angle_distance_2 = angle_distance_1 + 6.2832;
+            double angle_distance_3 = angle_distance_1 - 6.2832;
+            // need to take periodicity into account
+            double temp_distance = angle_distance_1;
+            if (abs(angle_distance_2) < abs(angle_distance_1) ) {
+                temp_distance = angle_distance_2;
+            }
+            if (abs(angle_distance_3) < abs(angle_distance_1) ) {
+                temp_distance = angle_distance_3;
+            }
+            derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii] = force_constant * temp_distance * (-1)\
                                                          / sqrt(1 - cos_value * cos_value) * sign;
             derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1] = 0;  // FIXME: may I set it to be simply 0?
         }

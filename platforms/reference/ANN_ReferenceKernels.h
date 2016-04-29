@@ -5,9 +5,11 @@
 #include "openmm/System.h"
 #include "openmm/ANN_Kernels.h"
 #include "RealVec.h"
+#include <algorithm>
 
 #include "SimTKOpenMMRealType.h"
 
+using std::min;
 
 namespace OpenMM {
 
@@ -99,8 +101,17 @@ public:
                 double sin_value = output_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1];
                 int sign = sin_value > 0 ? 1 : -1;
                 double angle = acos(cos_value) * sign;
-                potential_energy += 0.5 * force_constant * (angle - potential_center[ii]) \
-                                                         * (angle - potential_center[ii]);
+                
+                double angle_distance_1 = angle - potential_center[ii];
+                double angle_distance_2 = angle_distance_1 + 6.2832;
+                double angle_distance_3 = angle_distance_1 - 6.2832;
+                // need to take periodicity into account
+                double angle_distance_squared = min( min(
+                                angle_distance_1 * angle_distance_1,
+                                angle_distance_2 * angle_distance_2),
+                                angle_distance_3 * angle_distance_3
+                                );  
+                potential_energy += 0.5 * force_constant * angle_distance_squared;
             }
         }
         
