@@ -219,7 +219,7 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
             int sign = sin_value > 0 ? 1 : -1;
             double angle = acos(cos_value) * sign;
             derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii] = force_constant * (angle - potential_center[ii]) * (-1)\
-                                                         / sqrt(1 - cos_value * cos_value);
+                                                         / sqrt(1 - cos_value * cos_value) * sign;
             derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1] = 0;  // FIXME: may I set it to be simply 0?
         }
     }
