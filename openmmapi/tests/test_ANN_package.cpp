@@ -151,7 +151,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
-    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0,0,0,0}, {0,0,0,0}});
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
@@ -232,7 +232,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
     forceField -> set_potential_center(vector<double>({0, 0}));
-    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0,0,0,0}, {0,0,0,0}});
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("Reference");
