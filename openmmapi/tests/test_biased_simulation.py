@@ -59,6 +59,10 @@ system.addForce(force)
 
 integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
 
+
+platform = Platform.getPlatformByName('Reference')
+platform.loadPluginsFromDirectory('/usr/local/openmm/lib/plugins')  # load the plugin from specific directory
+
 simulation = Simulation(pdb.topology, system, integrator)
 simulation.context.setPositions(pdb.positions)
 
