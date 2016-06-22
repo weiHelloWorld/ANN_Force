@@ -285,6 +285,86 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
 }
 
 
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_temp_1() {
+    // this is a test for alanine dipeptide (only backbone atoms included here)
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide\n";
+    System system;
+    int num_of_atoms = 7;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.01);
+    ANN_Force* forceField = new ANN_Force();
+    forceField -> set_num_of_nodes(vector<int>({8, 15, 2}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
+    vector<vector<double> > coeff{{-0.31875740151672177, 0.32285065440356292, 0.83635626972959354, 0.14920100171609049, 0.41869803015016493, 0.53283392495651005, 0.25247090132182243, -0.61701125566675374, -0.22607647879242615, -0.24483169515428535, -0.1013238998466106, -0.077129877014225343, 0.37501725915420098, -0.2294719896347639, 0.1590300683353377, -0.10538882715479421, 0.0026284642033629645, -0.30266922459815626, -0.45797543631052889, 0.7007463842530699, 0.047775242961448312, -0.78382992805123353, -0.4660494071930491, -0.39201128983194611, 0.24235126560716347, -0.015758468776178744, -0.13270024896630694, 0.096479474684857264, 0.27607049730326139, 0.065758748600758324, -0.28279839081073049, 0.27599697815723212, -0.70262619251399183, 0.48656474098699148, 0.82135309047190264, -0.050361428599173044, 0.24560225793804594, -0.079517500243165409, -0.23796263769471743, 0.85009183566475033, 0.087365375302592099, -0.052921401392980856, -0.29817084048926168, -1.0326386472698428, 0.20342980179953343, -0.13558239533849584, 0.1957756940735923, 0.67328683258697686, 0.32441309795557471, 0.3195945168934492, -0.86778633811838624, 0.91485999348761271, -0.25170021443870172, 0.24673389983866131, 0.029137312303548438, -0.5210910731063183, -0.56035387773509293, 0.65786248121684121, 0.17997997257016271, 0.014974474870441058, 0.47449115820104976, 0.007350748851190708, 0.31473027663345465, 0.65601331047445666, -0.44739702747442728, -0.16316909854712905, 0.56031920409035618, -0.55875349389516837, -0.18124762143230999, -0.099381036437795611, 0.099402112600022574, -0.022793146545307737, -0.60091578790246902, -0.4138218704118381, 0.34204371061533623, 0.070605431381411871, 0.2394063271441117, -0.59311375567961644, 0.3401878060194638, -0.12007832877693034, 0.39437682918237271, -0.21771192199710357, -0.46956852466628901, -0.56832621063843392, 0.43720719391065177, 0.2411460299507433, 0.62170713890364371, -0.66051006858886507, 0.57036194295819731, 0.63727608398652691, -0.53224693296258119, -0.099093053473522708, 0.63659918168912422, 0.58107499352913794, 0.47122345020639395, 0.095072382502705111, -0.071411494136139828, 0.32460289192742814, -0.34704776814802485, 0.16984524543900381, -0.50136780370991874, 0.64155385260634823, 0.16226407797460771, 0.2077508829749542, 0.4892371719552745, 0.39553852725674848, -0.44811960854132266, -0.23242246681172982, 0.30704103629042717, 0.37729321226518886, 0.13259358612305974, 0.204788284194278, -0.59652605867517583, 0.63760108464365683, 0.38997085110406143, 0.54243902741026873, -0.46422585669009203, -0.48585444096773639, -0.18920213683108078, -0.062503740975689823},
+{0.35052979094807973, -0.031435892979307982, -0.34116898152427017, 0.1941037639473189, 0.37354211293956591, 0.5614821322429786, 0.24316885912756434, -0.03130579471899831, -0.086238937592167039, -0.56507487379601962, 0.0167584352903551, -0.33610604695343876, -0.10152981934629646, -0.96251698105359274, 0.24009067471188655, 0.2844259997867663, 0.71001035426183579, -0.40100233063691015, -0.065801436146621969, -0.32518888534882978, 0.094252392979903885, -0.17129984904380494, 0.44300308066693594, 0.20601112070470307, 0.08278971723751706, -0.12741076093291512, -0.11315603552563522, -0.41884452991601434, 0.049954057246054118, -0.33594067654411891}};
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_potential_center(vector<double>({0.1, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > 
+        {{-0.36906062280709279, -0.59131919312399095, -0.84659856651584509, -0.084765966504940352, 0.47258669905786538, 0.29139864407550331, 0.039776531427744038, -0.12426019578607678, 0.27813782873304532, 0.12349188418434202, -0.23928032048694292, -0.15582822433851695, 0.71783542899694119, 0.13163101710811542, 0.14141529504476155},
+{.090182463663168511, 0.58352910786332224}});
+    forceField -> set_list_of_index_of_atoms_forming_dihedrals(vector<vector<int> >{{1,2,3,4}, 
+                                                                                    {2,3,4,5},
+                                                                                    {3,4,5,6},
+                                                                                    {4,5,6,7}});
+    system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName("Reference");
+    Context context(system, integrator, platform);
+    vector<Vec3> positions_1(num_of_atoms);
+    positions_1[0] = Vec3(-1, -2, -3);
+    positions_1[1] = Vec3(0, 0, 0);
+    positions_1[2] = Vec3(1.5, 0, 0);
+    positions_1[3] = Vec3(0, 0, 1);
+    positions_1[4] = Vec3(0.5, 0, 0);
+    positions_1[5] = Vec3(0, 0.3, 0.6);
+    positions_1[6] = Vec3(0, 0.4, 0.5);
+    context.setPositions(positions_1);
+
+    double energy_1, energy_2, energy_3;
+
+    vector<Vec3> forces;
+    vector<Vec3> temp_positions;
+
+    State state = context.getState(State::Forces | State::Energy | State::Positions);
+    {
+        forces = state.getForces();
+        energy_1 = state.getPotentialEnergy();
+        temp_positions = state.getPositions();
+        printf("forces:\n");
+        for (int ii = 0; ii < num_of_atoms; ii ++) {
+            print_Vec3(forces[ii]);
+        }
+        // printf("positions:\n");
+        // for (int ii = 0; ii < num_of_atoms; ii ++) {
+        //     print_Vec3(temp_positions[ii]);
+        // }
+        // printf("potential energy = %lf\n", energy_1);
+    }
+
+    double delta = 0.005;
+    auto positions_2 = positions_1;
+    auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        for (int jj = 0; jj < 3; jj ++) {
+            positions_2 = positions_1;
+            positions_2[ii][jj] += delta;
+            context.setPositions(positions_2);
+            energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
+            // printf("potential energy = %lf\n", energy_2);
+            numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
+        }
+    }
+    // print out numerical results
+    printf("numerical_derivatives = \n");
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        print_Vec3(numerical_derivatives[ii]);
+    }
+    
+    return;
+}
+
 int main(int argc, char* argv[]) {
     try {
         registerKernelFactories();  // this is required
@@ -293,6 +373,7 @@ int main(int argc, char* argv[]) {
         test_forward_and_backward_prop();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_temp_1();
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;
