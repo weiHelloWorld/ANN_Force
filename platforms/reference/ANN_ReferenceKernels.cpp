@@ -123,6 +123,10 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
     get_all_forces_from_derivative_of_first_layer(positionData, forceData, derivatives_of_each_layer[0]);
+    // for (auto my_f: forceData) {
+    //     printf("force = %f\t%f\t%f\n", my_f[0], my_f[1], my_f[2]);
+    // }
+    // printf("\n");
     return update_and_get_potential_energy();  
 }
 
