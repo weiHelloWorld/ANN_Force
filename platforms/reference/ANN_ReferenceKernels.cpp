@@ -355,9 +355,9 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     }
     
 
-    RealVec diff_1 = positionData[idx[0]] - positionData[idx[1]];
-    RealVec diff_2 = positionData[idx[1]] - positionData[idx[2]];
-    RealVec diff_3 = positionData[idx[2]] - positionData[idx[3]];
+    RealVec diff_1 = positionData[idx[1]] - positionData[idx[0]];
+    RealVec diff_2 = positionData[idx[2]] - positionData[idx[1]];
+    RealVec diff_3 = positionData[idx[3]] - positionData[idx[2]];
 
     double x11 = diff_1[0], x12 = diff_1[1], x13 = diff_1[2];
     double x21 = diff_2[0], x22 = diff_2[1], x23 = diff_2[2]; 
@@ -367,7 +367,7 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     RealVec normal_2 = diff_2.cross(diff_3);
 
     RealVec sin_vec = normal_1.cross(normal_2);
-    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? -1 : 1;  // FIXME: which is right? is this a quick fix?
+    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
 
     RealOpenMM n_1x = normal_1[0], n_1y = normal_1[1], n_1z = normal_1[2], 
                n_2x = normal_2[0], n_2y = normal_2[1], n_2z = normal_2[2];
@@ -463,8 +463,8 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
                                         * der_of_cos_sin_to_diff[0][3 * ii + jj]
                                         + derivatives_of_first_layer[index_of_sin_node_in_input_layer] 
                                         * der_of_cos_sin_to_diff[1][3 * ii + jj]; 
-            forceData[idx[ii]][jj] += - temp;
-            forceData[idx[ii + 1]][jj] += + temp;
+            forceData[idx[ii]][jj] += + temp;
+            forceData[idx[ii + 1]][jj] += - temp;
 #ifdef DEBUG
             // printf("diff_1 = \n");
             // printf("%f\t%f\t%f\n", diff_1[0], diff_1[1], diff_1[2]);
@@ -512,9 +512,9 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_of_dihedral_angles(const vect
 
 void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int idx_2, int idx_3, int idx_4, 
                                 const vector<RealVec>& positionData, RealOpenMM& cos_value, RealOpenMM& sin_value) {
-    RealVec diff_1 = positionData[idx_1] - positionData[idx_2];
-    RealVec diff_2 = positionData[idx_2] - positionData[idx_3];
-    RealVec diff_3 = positionData[idx_3] - positionData[idx_4];
+    RealVec diff_1 = positionData[idx_2] - positionData[idx_1];
+    RealVec diff_2 = positionData[idx_3] - positionData[idx_2];
+    RealVec diff_3 = positionData[idx_4] - positionData[idx_3];
 
 
     RealVec normal_1 = diff_1.cross(diff_2);
@@ -523,7 +523,7 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     normal_2 /= sqrt(normal_2.dot(normal_2));
     cos_value = normal_1.dot(normal_2);
     RealVec sin_vec = normal_1.cross(normal_2);
-    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? -1 : 1; // FIXME: which is right? is this a quick fix?
+    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
     sin_value = sqrt(sin_vec.dot(sin_vec)) * sign;
 #ifdef DEBUG    
     // printf("positionData[%d] = %f,%f,%f\n", idx_1, positionData[idx_1][0], positionData[idx_1][1],positionData[idx_1][2]);
