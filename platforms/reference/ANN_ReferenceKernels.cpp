@@ -367,7 +367,7 @@ void ReferenceCalcANN_ForceKernel::get_force_from_derivative_of_first_layer(int 
     RealVec normal_2 = diff_2.cross(diff_3);
 
     RealVec sin_vec = normal_1.cross(normal_2);
-    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
+    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? -1 : 1;  // FIXME: which is right? is this a quick fix?
 
     RealOpenMM n_1x = normal_1[0], n_1y = normal_1[1], n_1z = normal_1[2], 
                n_2x = normal_2[0], n_2y = normal_2[1], n_2z = normal_2[2];
