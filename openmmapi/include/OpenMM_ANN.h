@@ -5,6 +5,6 @@
 #include "openmm/ANN_Kernels.h"
 #include "openmm/internal/ANN_ForceImpl.h"
 
-#define DEBUG
+// #define DEBUG
 
 #endif

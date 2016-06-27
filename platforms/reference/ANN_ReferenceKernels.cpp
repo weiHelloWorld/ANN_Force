@@ -119,6 +119,13 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     // test case
     vector<RealOpenMM> cos_sin_value;
     get_cos_and_sin_of_dihedral_angles(positionData, cos_sin_value);
+#ifdef DEBUG
+    auto index_of_backbone = std::vector<int> {2,5,7,9,15,17,19};
+    for (auto idx: index_of_backbone) {
+        printf("%f, %f, %f, ", positionData[idx-1][0], positionData[idx-1][1], positionData[idx-1][2]);
+    }
+    printf("\n");
+#endif
     calculate_output_of_each_layer(cos_sin_value);
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
@@ -184,21 +191,22 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     }
 #ifdef DEBUG
     // print out the result for debugging
-    // printf("output_of_each_layer = \n");
+    printf("output_of_each_layer = \n");
     // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
-    //     printf("layer[%d]: ", ii);
-    //     if (ii != 0) {
-    //         cout << layer_types[ii - 1] << "\t";    
-    //     }
-    //     else {
-    //         cout << "input \t" ;
-    //     }
-    //     for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
-    //         printf("%lf\t", output_of_each_layer[ii][jj]);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("\n");
+    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+        printf("layer[%d]: ", ii);
+        if (ii != 0) {
+            cout << layer_types[ii - 1] << "\t";    
+        }
+        else {
+            cout << "input \t" ;
+        }
+        for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+            printf("%lf\t", output_of_each_layer[ii][jj]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 #endif
     return;
 }
@@ -515,16 +523,20 @@ void ReferenceCalcANN_ForceKernel::get_cos_and_sin_for_four_atoms(int idx_1, int
     normal_2 /= sqrt(normal_2.dot(normal_2));
     cos_value = normal_1.dot(normal_2);
     RealVec sin_vec = normal_1.cross(normal_2);
-    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? 1 : -1;
+    int sign = (sin_vec[0] + sin_vec[1] + sin_vec[2]) * (diff_2[0] + diff_2[1] + diff_2[2]) > 0 ? -1 : 1; // FIXME: which is right? is this a quick fix?
     sin_value = sqrt(sin_vec.dot(sin_vec)) * sign;
 #ifdef DEBUG    
-    // printf("%f,%f,%f\n", diff_1[0], diff_1[1], diff_1[2]);
-    // printf("%f,%f,%f\n", diff_2[0], diff_2[1], diff_2[2]);
-    // printf("%f,%f,%f\n", diff_3[0], diff_3[1], diff_3[2]);
+    // printf("positionData[%d] = %f,%f,%f\n", idx_1, positionData[idx_1][0], positionData[idx_1][1],positionData[idx_1][2]);
+    // printf("positionData[%d] = %f,%f,%f\n", idx_2, positionData[idx_2][0], positionData[idx_2][1],positionData[idx_2][2]);
+    // printf("positionData[%d] = %f,%f,%f\n", idx_3, positionData[idx_3][0], positionData[idx_3][1],positionData[idx_3][2]);
+    // printf("positionData[%d] = %f,%f,%f\n", idx_4, positionData[idx_4][0], positionData[idx_4][1],positionData[idx_4][2]);
+    // printf("diff_1 = %f,%f,%f\n", diff_1[0], diff_1[1], diff_1[2]);
+    // printf("diff_2 = %f,%f,%f\n", diff_2[0], diff_2[1], diff_2[2]);
+    // printf("diff_3 = %f,%f,%f\n", diff_3[0], diff_3[1], diff_3[2]);
     // printf("%f,%f,%f\n", normal_1[0], normal_1[1], normal_1[2]);
     // printf("%f,%f,%f\n", normal_2[0], normal_2[1], normal_2[2]);
     // printf("%f,%f,%f\n", sin_vec[0], sin_vec[1], sin_vec[2]);
-    // printf("%f\n", sin_value);
+    // printf("cos_value = %f, sin_value = %f\n", cos_value, sin_value);
 #endif
 #ifdef DEBUG
     // printf("idx_1 = %d, idx_2 = %d, idx_3 = %d, idx_4 = %d\n", idx_1, idx_2, idx_3, idx_4);
