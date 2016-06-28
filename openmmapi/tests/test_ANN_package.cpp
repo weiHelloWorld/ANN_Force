@@ -127,6 +127,46 @@ void test_forward_and_backward_prop() {
     return;
 }
 
+void test_forward_and_backward_prop_2() {
+    cout << "running test_forward_and_backward_prop_2\n";
+    System system;
+    ANN_Force* forceField = new ANN_Force();
+    Platform& platform = Platform::getPlatformByName("Reference");
+    ReferenceCalcANN_ForceKernel* forcekernel = new ReferenceCalcANN_ForceKernel("", platform, system);
+    forceField -> set_num_of_nodes(vector<int>({2, 3, 2}));
+    vector<vector<double> > coeff{{0.01,0.02,0.03,0.04,0.05,0.06}, {-1, -2, -3, 1, 2, 3}};
+    forceField -> set_coeffients_of_connections(coeff);
+    vector<vector<double> > bias{{0.01,0.02,0.03},{1.92, 1.08}};
+    forceField -> set_values_of_biased_nodes(bias);
+    vector<string> layer_types {"Linear", "Circular"};
+    forceField -> set_layer_types(layer_types);
+    vector<double> pc{0};
+    forceField -> set_potential_center(pc);
+    forceField -> set_force_constant(10);
+    forcekernel -> initialize(system, *forceField);
+    auto temp_coef = forcekernel -> get_coeff();
+    vector<RealOpenMM> input{1,2};
+    forcekernel -> calculate_output_of_each_layer(input);
+    auto actual_output_of_layer = forcekernel -> get_output_of_each_layer();
+    vector<vector<double> > expected_output_of_layer{{1,2}, {0.06,0.13,0.20},{0.447214, 0.894427}};
+    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+        printf("actual_output_of_layer[%d] = \n", ii);
+        print_vector(actual_output_of_layer[ii], actual_output_of_layer[ii].size());
+    }
+    
+    for (int ii = 0; ii < NUM_OF_LAYERS; ii ++) {
+        for (int jj = 0; jj < expected_output_of_layer[ii].size(); jj ++) {
+            ASSERT_EQUAL_TOL(expected_output_of_layer[ii][jj], actual_output_of_layer[ii][jj], TOL);
+        }
+    }
+    vector<vector<double> > result;
+    forcekernel -> back_prop(result);
+    print_vector(result[0], 2);
+    print_vector(result[1], 3);
+    print_vector(result[2], 1);
+    return;
+}
+
 void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives\n";
     System system;
@@ -371,6 +411,7 @@ int main(int argc, char* argv[]) {
         // test_1();
         // test_sincos_of_dihedrals_four_atom();
         test_forward_and_backward_prop();
+        test_forward_and_backward_prop_2();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
