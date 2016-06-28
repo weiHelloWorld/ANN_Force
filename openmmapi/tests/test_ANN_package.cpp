@@ -302,7 +302,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
         }
     }
 
-    double delta = 0.01;
+    double delta = 0.005;
     auto positions_2 = positions_1;
     auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
     for (int ii = 0; ii < num_of_atoms; ii ++) {

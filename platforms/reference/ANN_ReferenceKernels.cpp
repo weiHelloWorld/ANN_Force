@@ -235,10 +235,10 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
             double angle_distance_3 = angle_distance_1 - 6.2832;
             // need to take periodicity into account
             double temp_distance = angle_distance_1;
-            if (abs(angle_distance_2) < abs(angle_distance_1) ) {
+            if (abs(angle_distance_2) < abs(temp_distance) ) {
                 temp_distance = angle_distance_2;
             }
-            if (abs(angle_distance_3) < abs(angle_distance_1) ) {
+            if (abs(angle_distance_3) < abs(temp_distance) ) {
                 temp_distance = angle_distance_3;
             }
             derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii] = force_constant * temp_distance * (-1)\
