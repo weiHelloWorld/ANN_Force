@@ -246,7 +246,7 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
             derivatives_of_each_layer[NUM_OF_LAYERS - 1][2 * ii + 1] = 0;  // FIXME: may I set it to be simply 0?
         }
     }
-    
+
     // the use back propagation to calculate derivatives for previous layers
     for (int jj = NUM_OF_LAYERS - 2; jj >= 0; jj --) {
         if (layer_types[jj] == string("Circular")) {
@@ -257,10 +257,10 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
 #endif
             // first calculate the derivative of input from derivative of output of this circular layer
             for(int ii = 0; ii < num_of_nodes[jj + 1] / 2; ii ++) {
-                double x_p = input_of_each_layer[jj][2 * ii];
-                double x_q = input_of_each_layer[jj][2 * ii + 1];
+                // printf("size of input_of_each_layer[%d] = %d\n",jj,  input_of_each_layer[jj].size());
+                double x_p = input_of_each_layer[jj + 1][2 * ii];
+                double x_q = input_of_each_layer[jj + 1][2 * ii + 1];
                 double radius = sqrt(x_p * x_p + x_q * x_q);
-
                 temp_derivative_of_input_for_this_layer[2 * ii] = x_q / (radius * radius * radius) 
                                                         * (x_q * derivatives_of_each_layer[jj + 1][2 * ii] 
                                                         - x_p * derivatives_of_each_layer[jj + 1][2 * ii + 1]);
