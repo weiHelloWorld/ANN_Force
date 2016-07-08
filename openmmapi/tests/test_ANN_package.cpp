@@ -248,8 +248,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     return;
 }
 
-void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer() {
-    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer\n";
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double> potential_center) {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer, with potential_center = [" 
+            << potential_center[0] << "," << potential_center[1] << "]\n";
     System system;
     int num_of_atoms = 6;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -271,7 +272,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
                                     }};
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
-    forceField -> set_potential_center(vector<double>({0, 0}));
+    forceField -> set_potential_center(potential_center);
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(vector<int>({1, 2, 3, 4, 5, 6}));
     system.addForce(forceField);
@@ -320,10 +321,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
-    
+
     return;
 }
-
 
 void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide() {
     // this is a test for alanine dipeptide (only backbone atoms included here)
@@ -413,7 +413,8 @@ int main(int argc, char* argv[]) {
         test_forward_and_backward_prop();
         test_forward_and_backward_prop_2();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
     }
     catch(const exception& e) {
