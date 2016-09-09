@@ -35,7 +35,6 @@ namespace OpenMM {
          OpenMM::CustomTorsionForce,
          OpenMM::DrudeForce,
          OpenMM::GBSAOBCForce,
-         OpenMM::GBVIForce,
          OpenMM::HarmonicAngleForce,
          OpenMM::HarmonicBondForce,
          OpenMM::MonteCarloAnisotropicBarostat,
@@ -72,7 +71,6 @@ namespace OpenMM {
          OpenMM::CustomTorsionForce,
          OpenMM::DrudeForce,
          OpenMM::GBSAOBCForce,
-         OpenMM::GBVIForce,
          OpenMM::HarmonicAngleForce,
          OpenMM::HarmonicBondForce,
          OpenMM::MonteCarloAnisotropicBarostat,
@@ -179,8 +177,6 @@ class CustomExternalForce ;
 class DrudeForce ;
 %copyctor CustomManyParticleForce ;
 class CustomManyParticleForce ;
-%copyctor GBVIForce ;
-class GBVIForce ;
 %copyctor TwoParticleAverageSite ;
 class TwoParticleAverageSite ;
 %copyctor GBSAOBCForce ;
@@ -1051,56 +1047,6 @@ public:
    virtual bool usesPeriodicBoundaryConditions() const ;
 };
 
-class GBVIForce : public Force {
-public:
-   enum NonbondedMethod {
-      NoCutoff =  0,
-      CutoffNonPeriodic =  1,
-      CutoffPeriodic =  2
-   };
-   enum BornRadiusScalingMethod {
-      NoScaling =  0,
-      QuinticSpline =  1
-   };
-
-   GBVIForce() ;
-
-   int getNumParticles() const ;
-   int addParticle(double charge, double radius, double gamma) ;
-   %apply double & OUTPUT { double & charge };
-   %apply double & OUTPUT { double & radius };
-   %apply double & OUTPUT { double & gamma };
-   void getParticleParameters(int index, double &charge, double &radius, double &gamma) const ;
-   %clear double & charge;
-   %clear double & radius;
-   %clear double & gamma;
-   void setParticleParameters(int index, double charge, double radius, double gamma) ;
-   int addBond(int particle1, int particle2, double distance) ;
-   %apply int & OUTPUT { int & particle1 };
-   %apply int & OUTPUT { int & particle2 };
-   %apply double & OUTPUT { double & distance };
-   void getBondParameters(int index, int &particle1, int &particle2, double &distance) const ;
-   %clear int & particle1;
-   %clear int & particle2;
-   %clear double & distance;
-   void setBondParameters(int index, int particle1, int particle2, double bondLength) ;
-   int getNumBonds() const ;
-   double getSolventDielectric() const ;
-   void setSolventDielectric(double dielectric) ;
-   double getSoluteDielectric() const ;
-   void setSoluteDielectric(double dielectric) ;
-   NonbondedMethod getNonbondedMethod() const ;
-   void setNonbondedMethod(NonbondedMethod method) ;
-   double getCutoffDistance() const ;
-   void setCutoffDistance(double distance) ;
-   BornRadiusScalingMethod getBornRadiusScalingMethod() const ;
-   void setBornRadiusScalingMethod(BornRadiusScalingMethod method) ;
-   double getQuinticLowerLimitFactor() const ;
-   void setQuinticLowerLimitFactor(double quinticLowerLimitFactor) ;
-   double getQuinticUpperBornRadiusLimit() const ;
-   void setQuinticUpperBornRadiusLimit(double quinticUpperBornRadiusLimit) ;
-   virtual bool usesPeriodicBoundaryConditions() const ;
-};
 
 class TwoParticleAverageSite : public VirtualSite {
 public:
