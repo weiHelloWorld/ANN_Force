@@ -6,5 +6,6 @@
 #include "openmm/internal/ANN_ForceImpl.h"
 
 // #define DEBUG
+// #define DEBUG_1
 
 #endif

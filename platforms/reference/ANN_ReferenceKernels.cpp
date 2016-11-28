@@ -153,6 +153,12 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
     output_of_each_layer[0] = input;
     // following layers
     for(int ii = 1; ii < NUM_OF_LAYERS; ii ++) {
+#ifdef DEBUG_1
+        if (output_of_each_layer[ii - 1].size() != num_of_nodes[ii - 1]) {
+            printf("output_of_each_layer[%d].size() = %d, num_of_nodes[%d].size() = %d\n",\
+                ii - 1, output_of_each_layer[ii - 1].size(), ii - 1, num_of_nodes[ii - 1]);
+        }
+#endif
         output_of_each_layer[ii].resize(num_of_nodes[ii]);
         input_of_each_layer[ii].resize(num_of_nodes[ii]);
         // first calculate input
