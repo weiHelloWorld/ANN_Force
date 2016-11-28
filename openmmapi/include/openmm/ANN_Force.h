@@ -82,6 +82,10 @@ public:
 
     void set_force_constant(double temp_force_constant);
 
+    const int get_data_type_in_input_layer() const;
+
+    void set_data_type_in_input_layer(int temp_data_type_in_input_layer);
+
     const std::vector<std::vector<int> >& get_list_of_index_of_atoms_forming_dihedrals() const;
 
     void set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::vector<int> > temp_list_of_index);    
@@ -120,6 +124,7 @@ private:
     std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
     double force_constant;
     int num_of_dihedrals;
+    int data_type_in_input_layer;  //   two options: 0 is cossin (default), 1 is Cartesian coordinates
 };
 
 

@@ -69,6 +69,10 @@ public:
 
     void set_force_constant(double temp_force_constant);
 
+    const int get_data_type_in_input_layer() const;
+
+    void set_data_type_in_input_layer(int temp_data_type_in_input_layer);
+
     const std::vector<std::vector<int> >& get_list_of_index_of_atoms_forming_dihedrals() const;
 
     void set_list_of_index_of_atoms_forming_dihedrals(std::vector<std::vector<int> > temp_list_of_index);    

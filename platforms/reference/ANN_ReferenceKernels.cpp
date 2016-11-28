@@ -54,6 +54,7 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
     force_constant = force.get_force_constant();
+    data_type_in_input_layer = force.get_data_type_in_input_layer();
     if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
         assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
     }
@@ -117,16 +118,20 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_1(vector<RealVec>& positionDa
 
 RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case
-    vector<RealOpenMM> cos_sin_value;
-    get_cos_and_sin_of_dihedral_angles(positionData, cos_sin_value);
-#ifdef DEBUG
-    auto index_of_backbone = std::vector<int> {2,5,7,9,15,17,19};
-    for (auto idx: index_of_backbone) {
-        printf("%f, %f, %f, ", positionData[idx-1][0], positionData[idx-1][1], positionData[idx-1][2]);
+    vector<RealOpenMM> input_layer_data;
+    if (! data_type_in_input_layer) {  // inputs are cos and sin
+        get_cos_and_sin_of_dihedral_angles(positionData, input_layer_data);    
     }
-    printf("\n");
-#endif
-    calculate_output_of_each_layer(cos_sin_value);
+    else {        // inputs are Cartesian coordinates
+        for (auto &position_coor: positionData) {   // flatten the 2D vector
+            for (int ii = 0; ii < 3; ii ++) {
+                input_layer_data.insert(input_layer_data.end(), position_coor[ii]);
+            }
+        }
+        assert (input_layer_data.size() == positionData.size() * 3);
+    }
+    
+    calculate_output_of_each_layer(input_layer_data);
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
     get_all_forces_from_derivative_of_first_layer(positionData, forceData, derivatives_of_each_layer[0]);
@@ -330,8 +335,18 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
 void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer(vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData,
                                                                             vector<double>& derivatives_of_first_layer) {
-    for (int ii = 0; ii < num_of_nodes[0] / 2; ii ++ ) {
-        get_force_from_derivative_of_first_layer(2 * ii, 2 * ii + 1, positionData, forceData, derivatives_of_first_layer);
+    if (!data_type_in_input_layer) {
+        for (int ii = 0; ii < num_of_nodes[0] / 2; ii ++ ) {
+            get_force_from_derivative_of_first_layer(2 * ii, 2 * ii + 1, positionData, forceData, derivatives_of_first_layer);
+        }
+    }
+    else {
+        assert (forceData.size() * 3 == derivatives_of_first_layer.size());
+        for (int ii = 0; ii < forceData.size(); ii ++) {
+            for (int jj = 0; jj < 3; jj ++) {
+                forceData[ii][jj] += - derivatives_of_first_layer[3 * ii + jj];
+            }
+        }
     }
     return;
 }

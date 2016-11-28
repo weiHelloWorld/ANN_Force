@@ -75,6 +75,15 @@ void ANN_Force::set_force_constant(double temp_force_constant) {
     return;
 }
 
+const int ANN_Force::get_data_type_in_input_layer() const {
+    return data_type_in_input_layer;
+}
+
+void ANN_Force::set_data_type_in_input_layer(int temp_data_type_in_input_layer) {
+    data_type_in_input_layer = temp_data_type_in_input_layer;
+    return;
+}
+
 const std::vector<std::vector<int> >& ANN_Force::get_list_of_index_of_atoms_forming_dihedrals() const {
     return list_of_index_of_atoms_forming_dihedrals;
 }

@@ -14,7 +14,7 @@ LIB_OPTION=-L$(LIB_DIR) $(LIBS)
 test_ANN_Force:
 	g++ $(CFLAGS) $(INCLUDE_OPTION) -o test_ANN_Force test_ANN_Force.cpp $(LIB_OPTION)
 
-test_ANN_package:
+test_ANN_package: test_ANN_package.cpp
 	g++ $(CFLAGS) $(INCLUDE_OPTION) -o test_ANN_package test_ANN_package.cpp $(LIB_OPTION)
 
 package:
