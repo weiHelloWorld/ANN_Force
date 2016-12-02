@@ -23,7 +23,8 @@ const std::vector<int>& ANN_Force::get_index_of_backbone_atoms()const {
 }
 
 void ANN_Force::set_index_of_backbone_atoms(std::vector<int> indices){
-	for (int i = 0; i < NUM_OF_BACKBONE_ATOMS; i ++) {
+    index_of_backbone_atoms.resize(indices.size());
+	for (int i = 0; i < indices.size(); i ++) {
 		index_of_backbone_atoms[i] = indices[i];
 	}
 	return;
