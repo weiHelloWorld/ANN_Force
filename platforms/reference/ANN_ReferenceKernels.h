@@ -123,6 +123,7 @@ private:
     double potential_energy;
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals;
+    std::vector<int> index_of_backbone_atoms;
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
     vector<string> layer_types = vector<string>(NUM_OF_LAYERS - 1);
     vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);

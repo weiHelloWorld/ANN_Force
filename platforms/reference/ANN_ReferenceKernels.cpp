@@ -50,6 +50,7 @@ ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
     list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
+    index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     layer_types = force.get_layer_types();
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
@@ -123,14 +124,24 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
         get_cos_and_sin_of_dihedral_angles(positionData, input_layer_data);    
     }
     else {        // inputs are Cartesian coordinates
-        for (auto &position_coor: positionData) {   // flatten the 2D vector
-            for (int ii = 0; ii < 3; ii ++) {
-                input_layer_data.insert(input_layer_data.end(), position_coor[ii]);
+        input_layer_data.resize(index_of_backbone_atoms.size() * 3);
+        for (int ii = 0; ii < index_of_backbone_atoms.size(); ii ++) {   // flatten the 2D vector
+            for (int jj = 0; jj < 3; jj ++) {
+                input_layer_data[3 * ii + jj] = positionData[index_of_backbone_atoms[ii] - 1][jj];  
             }
         }
-        assert (input_layer_data.size() == positionData.size() * 3);
+        assert (input_layer_data.size() == index_of_backbone_atoms.size() * 3);
+        // RealOpenMM coor_center_of_mass[3] = {0,0,0};
+        for (int ii = 0; ii < input_layer_data.size(); ii ++) {
+            input_layer_data[ii] /= 2;
+            // coor_center_of_mass[ii % 3] += input_layer_data[ii] / input_layer_data.size() * 3;
+        }
+        // printf("coor_center_of_mass = %f,%f,%f\n", coor_center_of_mass[0],coor_center_of_mass[1],coor_center_of_mass[2]);
+        // for (int ii = 0; ii < input_layer_data.size(); ii ++) {
+        //     input_layer_data[ii] -= coor_center_of_mass[ii % 3];
+        // }
     }
-    
+
     calculate_output_of_each_layer(input_layer_data);
     vector<vector<double> > derivatives_of_each_layer;
     back_prop(derivatives_of_each_layer);
@@ -200,7 +211,7 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
             return;
         }
     }
-#ifdef DEBUG
+#ifdef DEBUG_2
     // print out the result for debugging
     printf("output_of_each_layer = \n");
     // for (int ii = NUM_OF_LAYERS - 1; ii < NUM_OF_LAYERS; ii ++) {
@@ -347,10 +358,9 @@ void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer
         }
     }
     else {
-        assert (forceData.size() * 3 == derivatives_of_first_layer.size());
-        for (int ii = 0; ii < forceData.size(); ii ++) {
+        for (int ii = 0; ii < index_of_backbone_atoms.size(); ii ++) {
             for (int jj = 0; jj < 3; jj ++) {
-                forceData[ii][jj] += - derivatives_of_first_layer[3 * ii + jj];
+                forceData[index_of_backbone_atoms[ii] - 1][jj] += - derivatives_of_first_layer[3 * ii + jj] / 2;
             }
         }
     }
