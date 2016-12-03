@@ -1,13 +1,17 @@
-OpenMM_INSTALL_DIR=/home/fisiksnju/.anaconda2/include/
+HOME_DIR=/home/fisiksnju
+# SOURCE_DIR=/home/weichen9/weichen9/to_cluster/ANN_Force
 SOURCE_DIR=/home/fisiksnju/Dropbox/temp_Linux/ANN_Force
-PYTHON_PACKAGE_DIR=/home/fisiksnju/.anaconda2/lib/python2.7/site-packages
+
+OpenMM_INSTALL_DIR=$(HOME_DIR)/.anaconda2/include
+PYTHON_PACKAGE_DIR=$(HOME_DIR)/.anaconda2/lib/python2.7/site-packages
+
 CFLAGS = -g -std=c++11
 
 FCPPLIBS = -lstdc++
 
-LIB_DIR=/home/fisiksnju/.anaconda2/lib
+LIB_DIR=$(HOME_DIR)/.anaconda2/lib
 PLUGIN_DIR=$(LIB_DIR)/plugins
-INCLUDE_OPTION=-I$(OpenMM_INSTALL_DIR) -I$(OpenMM_INSTALL_DIR)/openmm/reference/ -I$(OpenMM_INSTALL_DIR)/openmm/internal -I$(SOURCE_DIR)/openmmapi/include -I/home/fisiksnju/.anaconda2/include/python2.7/
+INCLUDE_OPTION=-I$(OpenMM_INSTALL_DIR) -I$(OpenMM_INSTALL_DIR)/openmm/reference/ -I$(OpenMM_INSTALL_DIR)/openmm/internal -I$(SOURCE_DIR)/openmmapi/include -I$(HOME_DIR)/.anaconda2/include/python2.7/
 LIBS= -lOpenMM
 LIB_OPTION=-L$(LIB_DIR) $(LIBS)
 
@@ -33,9 +37,9 @@ install: wrapper
 	mv _ANN.so $(PYTHON_PACKAGE_DIR) && \
 	echo "========================================" &&\
 	echo "please add $(PLUGIN_DIR) and related directories into LD_LIBRARY_PATH, an example is: "
-	echo "export LD_LIBRARY_PATH=/usr/local/openmm/lib:/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/tests/:/usr/local/openmm/lib/plugins"
+	echo "export LD_LIBRARY_PATH=/usr/local/openmm/lib:$(SOURCE_DIR)/openmmapi/tests/:/usr/local/openmm/lib/plugins"
 	echo "Another example is (update for OpenMM version 7.0):"
-	echo "export LD_LIBRARY_PATH=$(LIB_DIR):$(PLUGIN_DIR):/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/tests/"
+	echo "export LD_LIBRARY_PATH=$(LIB_DIR):$(PLUGIN_DIR):$(SOURCE_DIR)/openmmapi/tests/"
 	
 clean:
 	rm test_ANN_Force test_ANN_package _ANN.so libANN.so *.o ANN_wrap.cxx ANN.py* 

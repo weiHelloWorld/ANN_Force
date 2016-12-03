@@ -1,4 +1,7 @@
 %module ANN
+%{
+#include <cstddef>
+%}
 
 %import(module="simtk.openmm") "swig/OpenMMSwigHeaders.i"
 %include "swig/typemaps.i"
