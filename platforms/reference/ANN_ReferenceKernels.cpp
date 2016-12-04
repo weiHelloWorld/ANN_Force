@@ -55,6 +55,7 @@ void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Fo
     values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
     force_constant = force.get_force_constant();
+    scaling_factor = force.get_scaling_factor();
     data_type_in_input_layer = force.get_data_type_in_input_layer();
     if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
         assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
@@ -133,7 +134,7 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
         assert (input_layer_data.size() == index_of_backbone_atoms.size() * 3);
         // RealOpenMM coor_center_of_mass[3] = {0,0,0};
         for (int ii = 0; ii < input_layer_data.size(); ii ++) {
-            input_layer_data[ii] /= 2;
+            input_layer_data[ii] /= scaling_factor;
             // coor_center_of_mass[ii % 3] += input_layer_data[ii] / input_layer_data.size() * 3;
         }
         // printf("coor_center_of_mass = %f,%f,%f\n", coor_center_of_mass[0],coor_center_of_mass[1],coor_center_of_mass[2]);
@@ -360,7 +361,7 @@ void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer
     else {
         for (int ii = 0; ii < index_of_backbone_atoms.size(); ii ++) {
             for (int jj = 0; jj < 3; jj ++) {
-                forceData[index_of_backbone_atoms[ii] - 1][jj] += - derivatives_of_first_layer[3 * ii + jj] / 2;
+                forceData[index_of_backbone_atoms[ii] - 1][jj] += - derivatives_of_first_layer[3 * ii + jj] / scaling_factor;
             }
         }
     }

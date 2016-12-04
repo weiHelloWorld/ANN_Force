@@ -76,6 +76,15 @@ void ANN_Force::set_force_constant(double temp_force_constant) {
     return;
 }
 
+const double ANN_Force::get_scaling_factor() const {
+    return scaling_factor;
+}
+
+void ANN_Force::set_scaling_factor(double temp_scaling_factor) {
+    scaling_factor = temp_scaling_factor;
+    return;
+}
+
 const int ANN_Force::get_data_type_in_input_layer() const {
     return data_type_in_input_layer;
 }

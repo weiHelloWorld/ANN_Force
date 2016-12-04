@@ -72,6 +72,10 @@ public:
 
     void set_force_constant(double temp_force_constant);
 
+    const double get_scaling_factor() const;
+
+    void set_scaling_factor(double temp_scaling_factor);
+
     const int get_data_type_in_input_layer() const;
 
     void set_data_type_in_input_layer(int temp_data_type_in_input_layer);

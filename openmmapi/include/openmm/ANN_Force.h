@@ -82,6 +82,10 @@ public:
 
     void set_force_constant(double temp_force_constant);
 
+    const double get_scaling_factor() const;
+
+    void set_scaling_factor(double temp_scaling_factor);
+
     const int get_data_type_in_input_layer() const;
 
     void set_data_type_in_input_layer(int temp_data_type_in_input_layer);
@@ -123,6 +127,7 @@ private:
     std::vector<std::vector<double> > values_of_biased_nodes = std::vector<std::vector<double> >(NUM_OF_LAYERS - 1);
     std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
     double force_constant;
+    double scaling_factor;
     int num_of_dihedrals;
     int data_type_in_input_layer;  //   two options: 0 is cossin (default), 1 is Cartesian coordinates
 };

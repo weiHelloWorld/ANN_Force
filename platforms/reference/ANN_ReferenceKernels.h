@@ -131,6 +131,7 @@ private:
     vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);
     std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
     double force_constant;
+    double scaling_factor;
     int data_type_in_input_layer;
     const System& system;  
 };
