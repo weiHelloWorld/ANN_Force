@@ -429,6 +429,8 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
                                     }};
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
+    forceField -> set_scaling_factor(1);
+    forceField -> set_index_of_backbone_atoms({1,2,3,4});
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_data_type_in_input_layer(1);
@@ -452,6 +454,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     {
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
+        // printf("energy_1 = %lf\n", energy_1);
         temp_positions = state.getPositions();
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -468,7 +471,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
-            // printf("potential energy = %lf\n", energy_2);
+            // printf("energy_2 = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
