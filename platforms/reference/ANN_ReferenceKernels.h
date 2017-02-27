@@ -4,10 +4,10 @@
 #include "OpenMM_ANN.h"
 #include "openmm/System.h"
 #include "openmm/ANN_Kernels.h"
-#include "RealVec.h"
+#include "openmm/reference/RealVec.h"
 #include <algorithm>
 
-#include "SimTKOpenMMRealType.h"
+#include "openmm/reference/SimTKOpenMMRealType.h"
 
 using std::min;
 

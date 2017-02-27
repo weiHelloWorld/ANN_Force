@@ -1,10 +1,12 @@
 
 #include "ANN_ReferenceKernelFactory.h"
 #include "ANN_ReferenceKernels.h"
-#include "ReferencePlatform.h"
+#include "openmm/reference/ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
-#include "ANN_ReferenceKernels.cpp"
+#include <iostream>
+#include <set>
+// #include "ANN_ReferenceKernels.cpp"
 
 using namespace OpenMM;
 using std::cout;

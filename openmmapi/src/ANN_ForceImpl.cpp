@@ -1,5 +1,10 @@
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/Platform.h"
+#include <set>
+#include "openmm/internal/ANN_ForceImpl.h"
+#include "openmm/ANN_Kernels.h"
+#include "openmm/OpenMMException.h"
+#include <cmath>
 
 using namespace OpenMM;
 

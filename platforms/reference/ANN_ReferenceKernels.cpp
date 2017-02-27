@@ -1,8 +1,8 @@
 #include "ANN_ReferenceKernels.h"
 #include "openmm/internal/ANN_ForceImpl.h"
-#include "ReferencePlatform.h"
+#include "openmm/reference/ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
-#include "../../openmmapi/src/ANN_Force.cpp"
+// #include "../../openmmapi/src/ANN_Force.cpp"
 
 #include <cmath>
 #include <iostream>
