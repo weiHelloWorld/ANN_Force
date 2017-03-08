@@ -1,7 +1,7 @@
 #ifndef ANN_OPENMM_KERNELS_H_
 #define ANN_OPENMM_KERNELS_H_
 
-
+#include "openmm/ANN_Force.h"
 #include "openmm/KernelImpl.h"
 #include "openmm/System.h"
 #include "openmm/Platform.h"
