@@ -46,6 +46,7 @@ void simulateArgon()
     ANN_Force* forceField = new ANN_Force();
     vector<double> pc{1.5};
     forceField -> set_potential_center(pc);
+    forceField -> set_num_of_nodes(vector<int>({4, 4, 1}));
     forceField -> set_force_constant(10);
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("CUDA");

@@ -74,25 +74,52 @@ CudaCalcANN_ForceKernel::~CudaCalcANN_ForceKernel() {
 
 void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     cu.setAsCurrent();
-    // int numContexts = cu.getPlatformData().contexts.size();
-    // int startIndex = cu.getContextIndex()*force.getNumBonds()/numContexts;
-    // int endIndex = (cu.getContextIndex()+1)*force.getNumBonds()/numContexts;
-    // numBonds = endIndex-startIndex;
-    // if (numBonds == 0)
-    //     return;
+    num_of_nodes = force.get_num_of_nodes();
+    list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
+    index_of_backbone_atoms = force.get_index_of_backbone_atoms();
+    layer_types = force.get_layer_types();
+    values_of_biased_nodes = force.get_values_of_biased_nodes();
+    potential_center = force.get_potential_center();
+    force_constant = force.get_force_constant();
+    scaling_factor = force.get_scaling_factor();
+    data_type_in_input_layer = force.get_data_type_in_input_layer();
+    if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
+        assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
+    }
+    else {
+        assert (potential_center.size() * 2 == num_of_nodes[NUM_OF_LAYERS - 1]);
+    }
+    
+    // now deal with coefficients of connections
+    // auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
+    // for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
+    //     int num_of_rows, num_of_cols; // num of rows/cols for the coeff matrix of this connection
+    //     num_of_rows = num_of_nodes[ii + 1];
+    //     num_of_cols = num_of_nodes[ii];
+    //     assert (num_of_rows * num_of_cols == temp_coeff[ii].size()); // check whether the size matches
+    //     // create a 2d array to hold coefficients begin
+    //     coeff[ii] = new double*[num_of_rows];
+    //     for (int kk = 0; kk < num_of_rows; kk ++) {
+    //         coeff[ii][kk] = new double[num_of_cols];
+    //     }
+    //     // creation end
+    //     for (int jj = 0; jj < temp_coeff[ii].size(); jj ++) {
+    //         coeff[ii][jj / num_of_cols][jj % num_of_cols] = temp_coeff[ii][jj];
+    //     }
+    // }
+    // TODO: 
+    // 1. store these parameters in device memory
+    // 2. set up replacement text
+    // 3. write .cu file
     numBonds = 1; 
     vector<vector<int> > atoms(numBonds, vector<int>(2));
     params = CudaArray::create<float2>(cu, numBonds, "bondParams");
     vector<float2> paramVector(numBonds);
-    for (int i = 0; i < numBonds; i++) {
-        double force_constant = force.get_force_constant();
-        auto potential_center = force.get_potential_center()[0];   // TODO: temp, just get first component for test
-        cout << potential_center;
-        paramVector[i] = make_float2((float) potential_center, (float) force_constant);
-    }
+    paramVector[0] = make_float2((float) potential_center[0], (float) force_constant);
     params->upload(paramVector);   // Copy the values in a vector to the device memory.
-    map<string, string> replacements;
-    replacements["PARAMS"] = cu.getBondedUtilities().addArgument(params->getDevicePointer(), "float2");
+    
+    map<string, string> replacements;  // used to replace text in .cu file
+    replacements["PARAMS"] = cu.getBondedUtilities().addArgument(params->getDevicePointer(), "float2");  
     cu.getBondedUtilities().addInteraction(atoms, cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements), force.getForceGroup());
     cu.addForce(new CudaANN_ForceInfo(force));
 }
