@@ -78,6 +78,7 @@ public:
         temp_cuda_array -> upload(temp_vec);   // Copy the values in a vector to the device memory.
         return temp_cuda_array;
     }
+
 private:
     int numBonds;
     bool hasInitializedKernel;
@@ -87,15 +88,15 @@ private:
     OpenMM::CudaArray* num_of_nodes;  // vector<int>
     OpenMM::CudaArray* index_of_backbone_atoms; // vector<int>
     OpenMM::CudaArray* layer_types; // vector<string>, should be converted to int array in CUDA kernel
+    OpenMM::CudaArray* potential_center; // vector<double>
+    OpenMM::CudaArray* force_constant;  // double, converted to vector<double> in kernel
+    OpenMM::CudaArray* scaling_factor;  // double, converted to vector<double> in kernel
     double potential_energy;
     
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
     vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
     vector<vector<double> > input_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
     vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);
-    std::vector<double> potential_center;  // the size should be equal to num_of_nodes[NUM_OF_LAYERS - 1]
-    double force_constant;
-    double scaling_factor;
     int data_type_in_input_layer;
 };
 

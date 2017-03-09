@@ -77,9 +77,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     // layer_types = force.get_layer_types();
     // values_of_biased_nodes = force.get_values_of_biased_nodes();
-    potential_center = force.get_potential_center();
-    force_constant = force.get_force_constant();
-    scaling_factor = force.get_scaling_factor();
+    // scaling_factor = force.get_scaling_factor();
     // data_type_in_input_layer = force.get_data_type_in_input_layer();
     // if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
     //     assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
@@ -114,12 +112,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     numBonds = 1; 
     vector<vector<int> > atoms(numBonds, vector<int>(2));   // TODO: what is this?  2 is the number of atoms in this bond
-    vector<float2> paramVector(numBonds);
-    paramVector[0] = make_float2((float) potential_center[0], (float) force_constant);
 
     // convert to CUDA array
     num_of_nodes = convert_vector_to_CudaArray(force.get_num_of_nodes(), "1");
-    params = convert_vector_to_CudaArray(paramVector, "2");
     index_of_backbone_atoms = convert_vector_to_CudaArray(force.get_index_of_backbone_atoms(), "3");
     {
         map<string, int> temp_replacement_layer_types;  // since string is not supported in CUDA kernel
@@ -130,11 +125,22 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         }
         layer_types = convert_vector_to_CudaArray(temp_layer_types, "4");
     }
+    potential_center = convert_vector_to_CudaArray(force.get_potential_center(), "5");
+    {
+        vector<float> temp_force_constant({(float) force.get_force_constant()});
+        force_constant = convert_vector_to_CudaArray(temp_force_constant, "6");
+    }
+    {
+        vector<float> temp_scaling_factor({(float) force.get_scaling_factor()});
+        scaling_factor = convert_vector_to_CudaArray(temp_scaling_factor, "7");   
+    }
+    
     
     // replace text in .cu file
     map<string, string> replacements;  
-    replacements["PARAMS"] = cu.getBondedUtilities().addArgument(params->getDevicePointer(), "float2");  
+    replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
     replacements["PARAMS_1"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float");  
+    replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");  
 
     cu.getBondedUtilities().addInteraction(atoms, cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements), force.getForceGroup());
     cu.addForce(new CudaANN_ForceInfo(force));
