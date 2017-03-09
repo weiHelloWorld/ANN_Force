@@ -48,6 +48,7 @@ void simulateArgon()
     forceField -> set_potential_center(pc);
     forceField -> set_num_of_nodes(vector<int>({4, 4, 1}));
     forceField -> set_force_constant(10);
+    forceField -> set_data_type_in_input_layer(1);
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("CUDA");
     Context context(system, integrator, platform);

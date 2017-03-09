@@ -74,35 +74,13 @@ CudaCalcANN_ForceKernel::~CudaCalcANN_ForceKernel() {
 
 void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     cu.setAsCurrent();
-    // index_of_backbone_atoms = force.get_index_of_backbone_atoms();
-    // layer_types = force.get_layer_types();
-    // values_of_biased_nodes = force.get_values_of_biased_nodes();
-    // scaling_factor = force.get_scaling_factor();
-    // data_type_in_input_layer = force.get_data_type_in_input_layer();
-    // if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
-    //     assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
-    // }
-    // else {
-    //     assert (potential_center.size() * 2 == num_of_nodes[NUM_OF_LAYERS - 1]);
-    // }
     
-    // now deal with coefficients of connections
-    // auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
-    // for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
-    //     int num_of_rows, num_of_cols; // num of rows/cols for the coeff matrix of this connection
-    //     num_of_rows = num_of_nodes[ii + 1];
-    //     num_of_cols = num_of_nodes[ii];
-    //     assert (num_of_rows * num_of_cols == temp_coeff[ii].size()); // check whether the size matches
-    //     // create a 2d array to hold coefficients begin
-    //     coeff[ii] = new double*[num_of_rows];
-    //     for (int kk = 0; kk < num_of_rows; kk ++) {
-    //         coeff[ii][kk] = new double[num_of_cols];
-    //     }
-    //     // creation end
-    //     for (int jj = 0; jj < temp_coeff[ii].size(); jj ++) {
-    //         coeff[ii][jj / num_of_cols][jj % num_of_cols] = temp_coeff[ii][jj];
-    //     }
-    // }
+    data_type_in_input_layer = force.get_data_type_in_input_layer();
+    if (data_type_in_input_layer != 1) {
+        throw OpenMMException("not yet implemented for data_type_in_input_layer = " 
+            + std::to_string(data_type_in_input_layer) + "\n");
+    }
+    
     // TODO: 
     // 1. store these parameters in device memory
     // 2. set up replacement text
@@ -139,7 +117,6 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // replace text in .cu file
     map<string, string> replacements;  
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
-    replacements["PARAMS_1"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float");  
     replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");  
 
     cu.getBondedUtilities().addInteraction(atoms, cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements), force.getForceGroup());
