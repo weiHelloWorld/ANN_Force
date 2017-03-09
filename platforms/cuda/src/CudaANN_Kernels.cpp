@@ -119,7 +119,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
     replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");  
 
-    cu.getBondedUtilities().addInteraction(atoms, cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements), force.getForceGroup());
+    auto source_code_for_force_after_replacement = cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements);
+    cout << source_code_for_force_after_replacement;
+    cu.getBondedUtilities().addInteraction(atoms, source_code_for_force_after_replacement, force.getForceGroup());
     cu.addForce(new CudaANN_ForceInfo(force));
 }
 
