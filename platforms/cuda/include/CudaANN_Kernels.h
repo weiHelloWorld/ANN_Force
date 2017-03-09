@@ -71,18 +71,25 @@ public:
      * @param force      the ANN_Force to copy the parameters from
      */
     void copyParametersToContext(OpenMM::ContextImpl& context, const ANN_Force& force);
+
+    template <class T>
+    OpenMM::CudaArray* convert_vector_to_CudaArray(vector<T> temp_vec, string name) {
+        auto temp_cuda_array = CudaArray::create<T>(cu, temp_vec.size(), name);
+        temp_cuda_array -> upload(temp_vec);   // Copy the values in a vector to the device memory.
+        return temp_cuda_array;
+    }
 private:
     int numBonds;
     bool hasInitializedKernel;
     OpenMM::CudaContext& cu;
     const OpenMM::System& system;
     OpenMM::CudaArray* params;
+    OpenMM::CudaArray* num_of_nodes;  // vector<int>
+    OpenMM::CudaArray* index_of_backbone_atoms; // vector<int>
+    OpenMM::CudaArray* layer_types; // vector<string>, should be converted to int array in CUDA kernel
     double potential_energy;
-    vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
-    std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals;
-    std::vector<int> index_of_backbone_atoms;
+    
     vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
-    vector<string> layer_types = vector<string>(NUM_OF_LAYERS - 1);
     vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
     vector<vector<double> > input_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
     vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);

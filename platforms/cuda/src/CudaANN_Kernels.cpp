@@ -74,21 +74,19 @@ CudaCalcANN_ForceKernel::~CudaCalcANN_ForceKernel() {
 
 void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     cu.setAsCurrent();
-    num_of_nodes = force.get_num_of_nodes();
-    list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
-    index_of_backbone_atoms = force.get_index_of_backbone_atoms();
-    layer_types = force.get_layer_types();
-    values_of_biased_nodes = force.get_values_of_biased_nodes();
+    // index_of_backbone_atoms = force.get_index_of_backbone_atoms();
+    // layer_types = force.get_layer_types();
+    // values_of_biased_nodes = force.get_values_of_biased_nodes();
     potential_center = force.get_potential_center();
     force_constant = force.get_force_constant();
     scaling_factor = force.get_scaling_factor();
-    data_type_in_input_layer = force.get_data_type_in_input_layer();
-    if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
-        assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
-    }
-    else {
-        assert (potential_center.size() * 2 == num_of_nodes[NUM_OF_LAYERS - 1]);
-    }
+    // data_type_in_input_layer = force.get_data_type_in_input_layer();
+    // if (layer_types[NUM_OF_LAYERS - 2] != string("Circular")) {
+    //     assert (potential_center.size() == num_of_nodes[NUM_OF_LAYERS - 1]);
+    // }
+    // else {
+    //     assert (potential_center.size() * 2 == num_of_nodes[NUM_OF_LAYERS - 1]);
+    // }
     
     // now deal with coefficients of connections
     // auto temp_coeff = force.get_coeffients_of_connections(); // FIXME: modify this initialization later
@@ -111,15 +109,33 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // 1. store these parameters in device memory
     // 2. set up replacement text
     // 3. write .cu file
+    // num_of_nodes = CudaArray::create<int>(cu, NUM_OF_LAYERS, "num_of_nodes_cuda");
+    // num_of_nodes -> upload(force.get_num_of_nodes());
+
     numBonds = 1; 
-    vector<vector<int> > atoms(numBonds, vector<int>(2));
-    params = CudaArray::create<float2>(cu, numBonds, "bondParams");
+    vector<vector<int> > atoms(numBonds, vector<int>(2));   // TODO: what is this?  2 is the number of atoms in this bond
     vector<float2> paramVector(numBonds);
     paramVector[0] = make_float2((float) potential_center[0], (float) force_constant);
-    params->upload(paramVector);   // Copy the values in a vector to the device memory.
+
+    // convert to CUDA array
+    num_of_nodes = convert_vector_to_CudaArray(force.get_num_of_nodes(), "1");
+    params = convert_vector_to_CudaArray(paramVector, "2");
+    index_of_backbone_atoms = convert_vector_to_CudaArray(force.get_index_of_backbone_atoms(), "3");
+    {
+        map<string, int> temp_replacement_layer_types;  // since string is not supported in CUDA kernel
+        temp_replacement_layer_types["Linear"] = 0; temp_replacement_layer_types["Tanh"] = 1; temp_replacement_layer_types["Circular"] = 2; 
+        vector<int> temp_layer_types(NUM_OF_LAYERS - 1);
+        for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
+            temp_layer_types[ii] = temp_replacement_layer_types[force.get_layer_types()[ii]];
+        }
+        layer_types = convert_vector_to_CudaArray(temp_layer_types, "4");
+    }
     
-    map<string, string> replacements;  // used to replace text in .cu file
+    // replace text in .cu file
+    map<string, string> replacements;  
     replacements["PARAMS"] = cu.getBondedUtilities().addArgument(params->getDevicePointer(), "float2");  
+    replacements["PARAMS_1"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float");  
+
     cu.getBondedUtilities().addInteraction(atoms, cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements), force.getForceGroup());
     cu.addForce(new CudaANN_ForceInfo(force));
 }
