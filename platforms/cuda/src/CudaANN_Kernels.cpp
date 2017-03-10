@@ -95,7 +95,11 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     numBonds = 1; 
     int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
-    vector<vector<int> > atoms(numBonds, vector<int>(num_of_backbone_atoms));   // TODO: what is this?  2 is the number of atoms in this bond
+    vector<vector<int> > index_of_atoms_in_the_force(numBonds);
+    index_of_atoms_in_the_force[0] = force.get_index_of_backbone_atoms();
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+        index_of_atoms_in_the_force[0][ii] -= 1;  // because in pdb file, index start with 1
+    }
 
     // convert to CUDA array
     auto temp_num_of_nodes = force.get_num_of_nodes();
@@ -176,7 +180,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     source_code_for_force_before_replacement += temp_string;
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
-    cu.getBondedUtilities().addInteraction(atoms, source_code_for_force_after_replacement , force.getForceGroup());
+    cu.getBondedUtilities().addInteraction(index_of_atoms_in_the_force, source_code_for_force_after_replacement , force.getForceGroup());
     cout << "before replacement:\n" << source_code_for_force_before_replacement << "\nafter replacement:\n" 
         << source_code_for_force_after_replacement << endl; 
     cu.addForce(new CudaANN_ForceInfo(force));

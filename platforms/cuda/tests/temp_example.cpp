@@ -84,7 +84,7 @@ void simulateArgon()
         // for (int ii = 0; ii < num_of_atoms; ii ++) {
         //     print_Vec3(forces[ii]);
         // }
-        if (timeInPs >= 200.)
+        if (timeInPs >= 100.)
             break;
 
         // Advance state many steps at a time, for efficient use of OpenMM.
