@@ -1,5 +1,5 @@
-# OpenMM_INSTALL_DIR=/home/fisiksnju/.anaconda2
-OpenMM_INSTALL_DIR=/usr/local/openmm
+OpenMM_INSTALL_DIR=/home/fisiksnju/.anaconda2
+# OpenMM_INSTALL_DIR=/usr/local/openmm
 CFLAGS = -g -std=c++11
 PLUGIN_DIR=/home/fisiksnju/Dropbox/temp_Linux/ANN_Force
 PLUGIN_DIR_INCLUDE=/home/fisiksnju/Dropbox/temp_Linux/ANN_Force/openmmapi/include
