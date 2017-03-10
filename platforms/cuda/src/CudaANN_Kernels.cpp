@@ -134,12 +134,26 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         bias_0 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[0], "bias_0");
         bias_1 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[1], "bias_1");
     }
-    
+
     
     // replace text in .cu file
     map<string, string> replacements;  
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
-    replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");  
+    replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float"); 
+    replacements["NUM_OF_NODES"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float"); 
+    replacements["LAYER_TYPES"] = cu.getBondedUtilities().addArgument(layer_types->getDevicePointer(), "float"); 
+    replacements["INPUT_0"] = cu.getBondedUtilities().addArgument(input_0->getDevicePointer(), "float"); 
+    replacements["INPUT_1"] = cu.getBondedUtilities().addArgument(input_1->getDevicePointer(), "float"); 
+    replacements["INPUT_2"] = cu.getBondedUtilities().addArgument(input_2->getDevicePointer(), "float"); 
+    replacements["OUTPUT_0"] = cu.getBondedUtilities().addArgument(output_0->getDevicePointer(), "float"); 
+    replacements["OUTPUT_1"] = cu.getBondedUtilities().addArgument(output_1->getDevicePointer(), "float"); 
+    replacements["OUTPUT_2"] = cu.getBondedUtilities().addArgument(output_2->getDevicePointer(), "float"); 
+    replacements["COEFF_0"] = cu.getBondedUtilities().addArgument(coeff_0->getDevicePointer(), "float"); 
+    replacements["COEFF_1"] = cu.getBondedUtilities().addArgument(coeff_1->getDevicePointer(), "float"); 
+    replacements["BIAS_0"] = cu.getBondedUtilities().addArgument(bias_0->getDevicePointer(), "float"); 
+    replacements["BIAS_1"] = cu.getBondedUtilities().addArgument(bias_1->getDevicePointer(), "float"); 
+
+
 
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
 

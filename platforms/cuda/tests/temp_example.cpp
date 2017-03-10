@@ -35,31 +35,41 @@ void simulateArgon()
     //     OpenMM::Platform::getDefaultPluginsDirectory());
 
     // Create a system with nonbonded forces.
-    OpenMM::System system;
-    // OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce(); 
-    // system.addForce(nonbond);
-    int num_of_atoms = 6;
+    System system;
+    int num_of_atoms = 4;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
-        system.addParticle(1);    
+        system.addParticle(1.0);    
     }
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
-    vector<double> pc{1.5};
-    forceField -> set_potential_center(pc);
-    forceField -> set_num_of_nodes(vector<int>({4, 4, 1}));
+    forceField -> set_num_of_nodes(vector<int>({12, 4, 4}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
+    vector<vector<double> > coeff{{1,1,1,0,0,0,0,0,0,0,0,0,
+                                   0,0,0,1,1,1,0,0,0,0,0,0,
+                                   0,0,0,0,0,0,1,1,1,0,0,0,
+                                   0,0,0,0,0,0,0,0,0,1,1,1
+                                    }, 
+                                  {1, 0, 0.4, 0,
+                                   0, 1, 0, 0,
+                                   0, 0, 1, 0,
+                                   0, 0, 0, 1
+                                    }};
+    forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
+    forceField -> set_scaling_factor(1);
+    forceField -> set_index_of_backbone_atoms({1,2,3,4});
+    forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_data_type_in_input_layer(1);
+    cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName("CUDA");
     Context context(system, integrator, platform);
-
     vector<Vec3> positions_1(num_of_atoms);
     positions_1[0] = Vec3(-1, -2, -3);
-    positions_1[1] = Vec3(0, 1, 0);
+    positions_1[1] = Vec3(0, 0, 0);
     positions_1[2] = Vec3(1, 0, 0);
-    positions_1[3] = Vec3(0, 0, 1);
-    positions_1[4] = Vec3(0.5, 0, 0);
-    positions_1[5] = Vec3(0, 0.3, 0.6);
+    positions_1[3] = Vec3(0, 0, 2);
     context.setPositions(positions_1);
 
 
