@@ -97,13 +97,14 @@ int main()
 {
     try {
         // cout << Platform::getDefaultPluginsDirectory();
-        auto temp = OpenMM::Platform::loadPluginsFromDirectory(
-                "/home/fisiksnju/.anaconda2/lib/plugins");
+        auto temp = OpenMM::Platform::loadPluginsFromDirectory("/home/fisiksnju/.anaconda2/lib/plugins");
+        // auto temp = OpenMM::Platform::loadPluginsFromDirectory("/usr/local/openmm/lib/plugins");
         // for (auto item: temp) {
         //     cout << item;
         // }
         // registerExampleReferenceKernelFactories();
         simulateArgon();
+        printf("done!\n");
         return 0; // success!
     }
     // Catch and report usage and runtime errors detected by OpenMM and fail.

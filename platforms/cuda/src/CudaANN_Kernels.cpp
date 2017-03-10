@@ -94,7 +94,8 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // num_of_nodes -> upload(force.get_num_of_nodes());
 
     numBonds = 1; 
-    vector<vector<int> > atoms(numBonds, vector<int>(2));   // TODO: what is this?  2 is the number of atoms in this bond
+    int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
+    vector<vector<int> > atoms(numBonds, vector<int>(num_of_backbone_atoms));   // TODO: what is this?  2 is the number of atoms in this bond
 
     // convert to CUDA array
     auto temp_num_of_nodes = force.get_num_of_nodes();
@@ -139,7 +140,8 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // replace text in .cu file
     map<string, string> replacements;  
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
-    replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float"); 
+    replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");
+    replacements["SCALING_FACTOR"] = cu.getBondedUtilities().addArgument(scaling_factor->getDevicePointer(), "float"); 
     replacements["NUM_OF_NODES"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float"); 
     replacements["LAYER_TYPES"] = cu.getBondedUtilities().addArgument(layer_types->getDevicePointer(), "float"); 
     replacements["INPUT_0"] = cu.getBondedUtilities().addArgument(input_0->getDevicePointer(), "float"); 
@@ -153,11 +155,27 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     replacements["BIAS_0"] = cu.getBondedUtilities().addArgument(bias_0->getDevicePointer(), "float"); 
     replacements["BIAS_1"] = cu.getBondedUtilities().addArgument(bias_1->getDevicePointer(), "float"); 
 
-
-
+    // preprocessing for source code
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
-
+    assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
+    string temp_string;
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+        temp_string += "INPUT_0[" + to_string(3 * ii + 0) + "] = pos" + to_string(ii + 1) + ".x / SCALING_FACTOR[0];\n";
+        temp_string += "INPUT_0[" + to_string(3 * ii + 1) + "] = pos" + to_string(ii + 1) + ".y / SCALING_FACTOR[0];\n";
+        temp_string += "INPUT_0[" + to_string(3 * ii + 2) + "] = pos" + to_string(ii + 1) + ".z / SCALING_FACTOR[0];\n";
+    }
+    temp_string += "\n";
+    source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
+    temp_string = "";
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+        temp_string += "real3 force" + to_string(ii + 1) + " = make_real3( "
+                    + "- INPUT_0[" + to_string(3 * ii + 0) + "] / SCALING_FACTOR[0], "
+                    + "- INPUT_0[" + to_string(3 * ii + 1) + "] / SCALING_FACTOR[0], "
+                    + "- INPUT_0[" + to_string(3 * ii + 2) + "] / SCALING_FACTOR[0]) ;\n";
+    }
+    source_code_for_force_before_replacement += temp_string;
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
+
     cu.getBondedUtilities().addInteraction(atoms, source_code_for_force_after_replacement , force.getForceGroup());
     cout << "before replacement:\n" << source_code_for_force_before_replacement << "\nafter replacement:\n" 
         << source_code_for_force_after_replacement << endl; 
