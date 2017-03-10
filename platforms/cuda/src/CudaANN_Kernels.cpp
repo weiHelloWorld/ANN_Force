@@ -70,6 +70,7 @@ CudaCalcANN_ForceKernel::~CudaCalcANN_ForceKernel() {
     cu.setAsCurrent();
     if (params != NULL)
         delete params;
+    // TODO: delete other parameters
 }
 
 void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
@@ -80,11 +81,15 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         throw OpenMMException("not yet implemented for data_type_in_input_layer = " 
             + std::to_string(data_type_in_input_layer) + "\n");
     }
+    if (NUM_OF_LAYERS != 3) {
+        throw OpenMMException("not yet implemented for NUM_OF_LAYERS != " + std::to_string(NUM_OF_LAYERS) + "\n");
+    }
     
-    // TODO: 
+    // for writing cuda code: 
     // 1. store these parameters in device memory
     // 2. set up replacement text
     // 3. write .cu file
+
     // num_of_nodes = CudaArray::create<int>(cu, NUM_OF_LAYERS, "num_of_nodes_cuda");
     // num_of_nodes -> upload(force.get_num_of_nodes());
 
@@ -92,6 +97,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     vector<vector<int> > atoms(numBonds, vector<int>(2));   // TODO: what is this?  2 is the number of atoms in this bond
 
     // convert to CUDA array
+    auto temp_num_of_nodes = force.get_num_of_nodes();
     num_of_nodes = convert_vector_to_CudaArray(force.get_num_of_nodes(), "1");
     index_of_backbone_atoms = convert_vector_to_CudaArray(force.get_index_of_backbone_atoms(), "3");
     {
@@ -112,6 +118,22 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         vector<float> temp_scaling_factor({(float) force.get_scaling_factor()});
         scaling_factor = convert_vector_to_CudaArray(temp_scaling_factor, "7");   
     }
+    {
+        vector<float> temp_input_0(temp_num_of_nodes[0]), temp_input_1(temp_num_of_nodes[1]), temp_input_2(temp_num_of_nodes[2]);
+        vector<float> temp_output_0(temp_num_of_nodes[0]), temp_output_1(temp_num_of_nodes[1]), temp_output_2(temp_num_of_nodes[2]);
+        input_0 = convert_vector_to_CudaArray(temp_input_0, "input_0");
+        input_1 = convert_vector_to_CudaArray(temp_input_1, "input_1");
+        input_2 = convert_vector_to_CudaArray(temp_input_2, "input_2");
+        output_0 = convert_vector_to_CudaArray(temp_output_0, "output_0");
+        output_1 = convert_vector_to_CudaArray(temp_output_1, "output_1");
+        output_2 = convert_vector_to_CudaArray(temp_output_2, "output_2");
+    }
+    {
+        coeff_0 = convert_vector_to_CudaArray(force.get_coeffients_of_connections()[0], "coeff_0");
+        coeff_1 = convert_vector_to_CudaArray(force.get_coeffients_of_connections()[1], "coeff_1");
+        bias_0 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[0], "bias_0");
+        bias_1 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[1], "bias_1");
+    }
     
     
     // replace text in .cu file
@@ -119,9 +141,12 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
     replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");  
 
-    auto source_code_for_force_after_replacement = cu.replaceStrings(CudaANN_KernelSources::ANN_Force, replacements);
-    cout << source_code_for_force_after_replacement;
-    cu.getBondedUtilities().addInteraction(atoms, source_code_for_force_after_replacement, force.getForceGroup());
+    auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
+
+    auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
+    cu.getBondedUtilities().addInteraction(atoms, source_code_for_force_after_replacement , force.getForceGroup());
+    cout << "before replacement:\n" << source_code_for_force_before_replacement << "\nafter replacement:\n" 
+        << source_code_for_force_after_replacement << endl; 
     cu.addForce(new CudaANN_ForceInfo(force));
 }
 

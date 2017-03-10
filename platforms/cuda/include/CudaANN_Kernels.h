@@ -91,12 +91,11 @@ private:
     OpenMM::CudaArray* potential_center; // vector<double>
     OpenMM::CudaArray* force_constant;  // double, converted to vector<double> in kernel
     OpenMM::CudaArray* scaling_factor;  // double, converted to vector<double> in kernel
+    OpenMM::CudaArray *input_0, *input_1, *input_2;  // vector<double>, 0,1,2 are layer index, currently we only support three-layer structure
+    OpenMM::CudaArray *output_0, *output_1, *output_2;
+    OpenMM::CudaArray *bias_0, *bias_1, *coeff_0, *coeff_1;
     double potential_energy;
     
-    vector<double** > coeff = vector<double** >(NUM_OF_LAYERS - 1);  // each coeff of connection is a matrix
-    vector<vector<double> > output_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
-    vector<vector<double> > input_of_each_layer = vector<vector<double> >(NUM_OF_LAYERS);
-    vector<vector<double> > values_of_biased_nodes = vector<vector<double> >(NUM_OF_LAYERS - 1);
     int data_type_in_input_layer;
 };
 
