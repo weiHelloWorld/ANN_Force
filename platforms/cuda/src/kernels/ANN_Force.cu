@@ -51,6 +51,7 @@ else if (LAYER_TYPES[0] == 1) { // tanh
 // layer 2
 for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
     INPUT_2[ii] = (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
+    energy += 0.5 * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
 }
 if (LAYER_TYPES[1] == 1) {
     for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
