@@ -132,14 +132,21 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
             }
         }
         assert (input_layer_data.size() == index_of_backbone_atoms.size() * 3);
-        RealOpenMM coor_center_of_mass[3] = {0,0,0};
-        for (int ii = 0; ii < input_layer_data.size(); ii ++) {
-            input_layer_data[ii] /= scaling_factor;
-            coor_center_of_mass[ii % 3] += input_layer_data[ii] / input_layer_data.size() * 3;
-        }
-        // printf("coor_center_of_mass = %f,%f,%f\n", coor_center_of_mass[0],coor_center_of_mass[1],coor_center_of_mass[2]);
-        for (int ii = 0; ii < input_layer_data.size(); ii ++) {
-            input_layer_data[ii] -= coor_center_of_mass[ii % 3];
+        bool remove_translation_degrees_of_freedom  = true;
+        if (remove_translation_degrees_of_freedom) {
+            RealOpenMM coor_center_of_mass[3] = {0,0,0};
+            for (int ii = 0; ii < input_layer_data.size(); ii ++) {
+                input_layer_data[ii] /= scaling_factor;
+                coor_center_of_mass[ii % 3] += input_layer_data[ii] / input_layer_data.size() * 3;
+            }
+            // printf("coor_center_of_mass = %f,%f,%f\n", coor_center_of_mass[0],coor_center_of_mass[1],coor_center_of_mass[2]);
+            for (int ii = 0; ii < input_layer_data.size(); ii ++) {
+                input_layer_data[ii] -= coor_center_of_mass[ii % 3];
+            }
+            // cout << "\n";
+            // for (auto item : input_layer_data) {
+            //     cout << item << "\t";
+            // }
         }
     }
 
