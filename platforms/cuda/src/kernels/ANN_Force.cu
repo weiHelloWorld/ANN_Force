@@ -57,9 +57,7 @@ if (LAYER_TYPES[1] == 1) {
         INPUT_2[ii] *= (1 - OUTPUT_2[ii] * OUTPUT_2[ii]);    
     }
 }
-else {
-    ; // do nothing
-}
+
 // layer 1
 num_of_rows = NUM_OF_NODES[2];
 num_of_cols = NUM_OF_NODES[1];
@@ -70,13 +68,11 @@ for (int ii = 0; ii < num_of_cols; ii ++) {
     }
 }
 if (LAYER_TYPES[1] == 1) {
-    for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
+    for (int ii = 0; ii < NUM_OF_NODES[1]; ii ++) {
         INPUT_1[ii] *= (1 - OUTPUT_1[ii] * OUTPUT_1[ii]);    
     }
 }
-else {
-    ; // do nothing
-}
+
 // input layer
 num_of_rows = NUM_OF_NODES[1];
 num_of_cols = NUM_OF_NODES[0];
@@ -87,11 +83,8 @@ for (int ii = 0; ii < num_of_cols; ii ++) {
     }
 }
 if (LAYER_TYPES[1] == 1) {
-    for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
+    for (int ii = 0; ii < NUM_OF_NODES[0]; ii ++) {
         INPUT_0[ii] *= (1 - OUTPUT_0[ii] * OUTPUT_0[ii]);    
     }
-}
-else {
-    ; // do nothing
 }
 

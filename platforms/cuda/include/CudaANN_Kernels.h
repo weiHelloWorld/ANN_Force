@@ -105,7 +105,7 @@ private:
     OpenMM::CudaArray* scaling_factor;  // double, converted to vector<double> in kernel
     OpenMM::CudaArray *input_0, *input_1, *input_2;  // vector<double>, 0,1,2 are layer index, currently we only support three-layer structure
     OpenMM::CudaArray *output_0, *output_1, *output_2;
-    OpenMM::CudaArray *deriv_0, *deriv_1, *deriv_2;  // derivatives of each layer
+    // OpenMM::CudaArray *deriv_0, *deriv_1, *deriv_2;  // derivatives of each layer
     OpenMM::CudaArray *bias_0, *bias_1, *coeff_0, *coeff_1;
     double potential_energy;
     

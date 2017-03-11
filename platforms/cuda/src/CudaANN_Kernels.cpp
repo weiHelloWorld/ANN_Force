@@ -114,7 +114,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         }
         layer_types = convert_vector_to_CudaArray(temp_layer_types, "4");
     }
-    potential_center = convert_vector_to_CudaArray(force.get_potential_center(), "5");
+    potential_center = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_potential_center()), "5");
     {
         vector<float> temp_force_constant({(float) force.get_force_constant()});
         force_constant = convert_vector_to_CudaArray(temp_force_constant, "6");
@@ -134,10 +134,20 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         output_2 = convert_vector_to_CudaArray(temp_output_2, "output_2");
     }
     {
-        coeff_0 = convert_vector_to_CudaArray(force.get_coeffients_of_connections()[0], "coeff_0");
-        coeff_1 = convert_vector_to_CudaArray(force.get_coeffients_of_connections()[1], "coeff_1");
-        bias_0 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[0], "bias_0");
-        bias_1 = convert_vector_to_CudaArray(force.get_values_of_biased_nodes()[1], "bias_1");
+        // cout << "temp" << endl;
+        // auto temp = convert_vector_of_type_to_float(force.get_coeffients_of_connections()[0]);
+        // for (auto item: temp) {
+        //     cout << item << "\t";
+        // }
+        coeff_0 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_coeffients_of_connections()[0]), "coeff_0");
+        coeff_1 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_coeffients_of_connections()[1]), "coeff_1");
+        bias_0 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_values_of_biased_nodes()[0]), "bias_0");
+        bias_1 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_values_of_biased_nodes()[1]), "bias_1");
+        float temp[50];
+        get_data_from_CudaArray(coeff_0, temp);
+        for (int ii = 0; ii < 50; ii ++) {
+            cout << temp[ii] << "\t";
+        }
     }
 
     
@@ -146,8 +156,8 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     replacements["POTENTIAL_CENTER"] = cu.getBondedUtilities().addArgument(potential_center->getDevicePointer(), "float");
     replacements["FORCE_CONSTANT"] = cu.getBondedUtilities().addArgument(force_constant->getDevicePointer(), "float");
     replacements["SCALING_FACTOR"] = cu.getBondedUtilities().addArgument(scaling_factor->getDevicePointer(), "float"); 
-    replacements["NUM_OF_NODES"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "float"); 
-    replacements["LAYER_TYPES"] = cu.getBondedUtilities().addArgument(layer_types->getDevicePointer(), "float"); 
+    replacements["NUM_OF_NODES"] = cu.getBondedUtilities().addArgument(num_of_nodes->getDevicePointer(), "int"); 
+    replacements["LAYER_TYPES"] = cu.getBondedUtilities().addArgument(layer_types->getDevicePointer(), "int"); 
     replacements["INPUT_0"] = cu.getBondedUtilities().addArgument(input_0->getDevicePointer(), "float"); 
     replacements["INPUT_1"] = cu.getBondedUtilities().addArgument(input_1->getDevicePointer(), "float"); 
     replacements["INPUT_2"] = cu.getBondedUtilities().addArgument(input_2->getDevicePointer(), "float"); 
