@@ -36,12 +36,12 @@ for (int ii = 0; ii < num_of_rows; ii ++) {
         INPUT_2[ii] += COEFF_1[ii * num_of_cols + jj] * OUTPUT_1[jj];
     }
 }
-if (LAYER_TYPES[0] == 0) { // linear
+if (LAYER_TYPES[1] == 0) { // linear
     for (int ii = 0; ii < num_of_rows; ii ++) {
         OUTPUT_2[ii] = INPUT_2[ii];
     }
 }
-else if (LAYER_TYPES[0] == 1) { // tanh
+else if (LAYER_TYPES[1] == 1) { // tanh
     for (int ii = 0; ii < num_of_rows; ii ++) {
         OUTPUT_2[ii] = tanh(INPUT_2[ii]);
     }
@@ -68,7 +68,7 @@ for (int ii = 0; ii < num_of_cols; ii ++) {
         INPUT_1[ii] += COEFF_1[ii + jj * num_of_cols] * INPUT_2[jj];
     }
 }
-if (LAYER_TYPES[1] == 1) {
+if (LAYER_TYPES[0] == 1) {
     for (int ii = 0; ii < NUM_OF_NODES[1]; ii ++) {
         INPUT_1[ii] *= (1 - OUTPUT_1[ii] * OUTPUT_1[ii]);    
     }
@@ -83,9 +83,6 @@ for (int ii = 0; ii < num_of_cols; ii ++) {
         INPUT_0[ii] += COEFF_0[ii + jj * num_of_cols] * INPUT_1[jj];
     }
 }
-if (LAYER_TYPES[1] == 1) {
-    for (int ii = 0; ii < NUM_OF_NODES[0]; ii ++) {
-        INPUT_0[ii] *= (1 - OUTPUT_0[ii] * OUTPUT_0[ii]);    
-    }
-}
+
+
 
