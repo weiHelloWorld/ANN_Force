@@ -91,6 +91,16 @@ public:
         return temp_result;
     }
 
+    template <class T>
+    string convert_vector_to_string_definition(vector<T> temp_vec, string name) {
+        string temp_result = name + " = {";
+        for (auto item: temp_vec) {
+            temp_result += std::to_string(item) + ",";
+        }
+        temp_result += "};\n";
+        return temp_result;
+    }
+
 private:
     int numBonds;
     bool hasInitializedKernel;
