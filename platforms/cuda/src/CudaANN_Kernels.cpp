@@ -132,9 +132,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         input_0 = convert_vector_to_CudaArray(temp_input_0, "input_0");
         input_1 = convert_vector_to_CudaArray(temp_input_1, "input_1");
         input_2 = convert_vector_to_CudaArray(temp_input_2, "input_2");
-        output_0 = convert_vector_to_CudaArray(temp_output_0, "output_0");
-        output_1 = convert_vector_to_CudaArray(temp_output_1, "output_1");
-        output_2 = convert_vector_to_CudaArray(temp_output_2, "output_2");
+        // output_0 = convert_vector_to_CudaArray(temp_output_0, "output_0");
+        // output_1 = convert_vector_to_CudaArray(temp_output_1, "output_1");
+        // output_2 = convert_vector_to_CudaArray(temp_output_2, "output_2");
     }
     {
         // cout << "temp" << endl;
@@ -164,9 +164,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     replacements["INPUT_0"] = cu.getBondedUtilities().addArgument(input_0->getDevicePointer(), "float"); 
     replacements["INPUT_1"] = cu.getBondedUtilities().addArgument(input_1->getDevicePointer(), "float"); 
     replacements["INPUT_2"] = cu.getBondedUtilities().addArgument(input_2->getDevicePointer(), "float"); 
-    replacements["OUTPUT_0"] = cu.getBondedUtilities().addArgument(output_0->getDevicePointer(), "float"); 
-    replacements["OUTPUT_1"] = cu.getBondedUtilities().addArgument(output_1->getDevicePointer(), "float"); 
-    replacements["OUTPUT_2"] = cu.getBondedUtilities().addArgument(output_2->getDevicePointer(), "float"); 
+    // replacements["OUTPUT_0"] = cu.getBondedUtilities().addArgument(output_0->getDevicePointer(), "float"); 
+    // replacements["OUTPUT_1"] = cu.getBondedUtilities().addArgument(output_1->getDevicePointer(), "float"); 
+    // replacements["OUTPUT_2"] = cu.getBondedUtilities().addArgument(output_2->getDevicePointer(), "float"); 
     replacements["COEFF_0"] = cu.getBondedUtilities().addArgument(coeff_0->getDevicePointer(), "float"); 
     replacements["COEFF_1"] = cu.getBondedUtilities().addArgument(coeff_1->getDevicePointer(), "float"); 
     replacements["BIAS_0"] = cu.getBondedUtilities().addArgument(bias_0->getDevicePointer(), "float"); 
@@ -175,36 +175,86 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // preprocessing for source code
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
     assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
-    string temp_string;
-    temp_string += "int num_of_parallel_threads = " + to_string(num_of_parallel_threads) + ";\n";
-    temp_string += "float scaling_factor = SCALING_FACTOR[0];\n";
+    stringstream temp_string;
+    temp_string << "int num_of_parallel_threads = " << num_of_parallel_threads << ";\n"
+                << "int num_of_rows, num_of_cols;\n"
+                << "float force_constant = " << force.get_force_constant() << ";\n";
     
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string += "INPUT_0[" + to_string(3 * ii + 0) + "] = pos" + to_string(ii + 1) + ".x / scaling_factor;\n";
-        temp_string += "INPUT_0[" + to_string(3 * ii + 1) + "] = pos" + to_string(ii + 1) + ".y / scaling_factor;\n";
-        temp_string += "INPUT_0[" + to_string(3 * ii + 2) + "] = pos" + to_string(ii + 1) + ".z / scaling_factor;\n";
+        temp_string << "INPUT_0[" << (3 * ii + 0) << "] = pos" << (ii + 1) << ".x / " << force.get_scaling_factor() << ";\n";
+        temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
+        temp_string << "INPUT_0[" << (3 * ii + 2) << "] = pos" << (ii + 1) << ".z / " << force.get_scaling_factor() << ";\n";
     }
-    temp_string += "\n";
-    source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
+    temp_string << "\n"; 
+    temp_string << "__syncthreads();\n";
+    temp_string << "// forward propagation\n";
+    for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
 
-    temp_string = "\n";
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string += "real3 force" + to_string(ii + 1) + ";\n";
-    } 
-    temp_string += "\n";
-    temp_string += "if (index == 0) { \n";
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
-        temp_string += "    force" + to_string(ii + 1) + " = make_real3( "
-                    + "- INPUT_0[" + to_string(3 * ii + 0) + "] / scaling_factor, "
-                    + "- INPUT_0[" + to_string(3 * ii + 1) + "] / scaling_factor, "
-                    + "- INPUT_0[" + to_string(3 * ii + 2) + "] / scaling_factor) ;\n";
+        temp_string << "for (int ii = index; ii < " << (temp_num_of_nodes[ii + 1]) << "; ii += num_of_parallel_threads) {\n";
+        temp_string << "    float temp = BIAS_" << (ii) << "[ii];\n";
+        temp_string << "    for (int jj = 0; jj < " << (temp_num_of_nodes[ii]) << "; jj ++) {\n";
+        temp_string << "        temp += COEFF_" << (ii) << "[ii * " << (temp_num_of_nodes[ii]) << " + jj] * INPUT_" << (ii) << "[jj];\n";
+        temp_string << "    }\n";
+        if (force.get_layer_types()[ii] == "Tanh") {
+            temp_string << "    INPUT_" << (ii + 1) << "[ii] = tanh(temp);\n";
+        }
+        else {
+            temp_string << "    INPUT_" << (ii + 1) << "[ii] = temp;\n";
+        }
+        temp_string << "}\n";
+        temp_string << "__syncthreads();\n";
     }
-    temp_string += "}\nelse { \n";
+    temp_string << "// backward propagation, INPUT_{0,1,2} are reused to store derivatives in each layer\n";
+    int dim_of_PC_space = temp_num_of_nodes[NUM_OF_LAYERS - 1];
+    temp_string << "for (int ii = index; ii < " << dim_of_PC_space << "; ii += num_of_parallel_threads) {\n";
+    temp_string << "    float temp = INPUT_" << (NUM_OF_LAYERS - 1) << "[ii];\n";
+    temp_string << "    energy += 0.5 * (temp - POTENTIAL_CENTER[ii]) * (temp - POTENTIAL_CENTER[ii]) * force_constant;\n";
+    if (force.get_layer_types()[NUM_OF_LAYERS - 2] == "Tanh") {
+        temp_string << "    INPUT_" << (NUM_OF_LAYERS - 1) << "[ii] = (temp - POTENTIAL_CENTER[ii]) * force_constant * (1 - temp * temp);\n";    
+    }
+    else if (force.get_layer_types()[NUM_OF_LAYERS - 2] == "Linear") {
+        temp_string << "    INPUT_" << (NUM_OF_LAYERS - 1) << "[ii] = (temp - POTENTIAL_CENTER[ii]) * force_constant;\n";    
+    }
+    temp_string << "}\n";
+    temp_string << "__syncthreads();\n";
+    for (int ii = NUM_OF_LAYERS - 1; ii > 0; ii --) {
+        temp_string << "for (int ii = index; ii < " << temp_num_of_nodes[ii - 1] << "; ii += num_of_parallel_threads) {\n";
+        temp_string << "    float temp = 0;\n";
+        temp_string << "    for (int jj = 0; jj < " << temp_num_of_nodes[ii] << "; jj ++) {\n";
+        temp_string << "        temp += COEFF_" << (ii - 1) << "[ii + jj * " << temp_num_of_nodes[ii - 1] << "] * INPUT_" << ii << "[jj];\n";
+        temp_string << "    }\n";
+        if ((ii - 2 >= 0) && (force.get_layer_types()[ii - 2] == "Tanh")) {
+            temp_string << "    float temp_" << (ii - 1) << " = INPUT_" << (ii - 1) << "[ii];\n";
+            temp_string << "    INPUT_" << (ii - 1) << "[ii] = temp * (1 - temp_" << (ii - 1) << " * temp_" << (ii - 1) << ");\n";
+        }
+        else {
+            temp_string << "    INPUT_" << (ii - 1) << "[ii] = temp;\n";
+        }
+        temp_string << "}\n";
+        temp_string << "__syncthreads();\n";
+    }
+    
+    // source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
+
+    temp_string << "\n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string += "    force" + to_string(ii + 1) + " = make_real3(0.0);\n";
+        temp_string << "real3 force" << (ii + 1) << ";\n";
     } 
-    temp_string += "}\n";
-    source_code_for_force_before_replacement += temp_string;
+    temp_string << "\n";
+    temp_string << "if (index == 0) { \n";
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
+        temp_string << "    force" << (ii + 1) << " = make_real3( ";
+        temp_string << "- INPUT_0[" << (3 * ii + 0) << "] / " << force.get_scaling_factor() << ", ";
+        temp_string << "- INPUT_0[" << (3 * ii + 1) << "] / " << force.get_scaling_factor() << ", ";
+        temp_string << "- INPUT_0[" << (3 * ii + 2) << "] / " << force.get_scaling_factor() << ") ;\n";
+    }
+    temp_string << "}\nelse { \n";
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+        temp_string << "    force" << (ii + 1) << " = make_real3(0.0);\n";
+    } 
+    temp_string << "}\n";
+    source_code_for_force_before_replacement = temp_string.str();
+    // source_code_for_force_before_replacement += temp_string;
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
     cu.getBondedUtilities().addInteraction(index_of_atoms_in_the_force, source_code_for_force_after_replacement , force.getForceGroup());
