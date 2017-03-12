@@ -184,13 +184,24 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     }
     temp_string += "\n";
     source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
-    temp_string = "";
+
+    temp_string = "\n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string += "real3 force" + to_string(ii + 1) + " = make_real3( "
+        temp_string += "real3 force" + to_string(ii + 1) + ";\n";
+    } 
+    temp_string += "\n";
+    temp_string += "if (index == 0) { \n";
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
+        temp_string += "    force" + to_string(ii + 1) + " = make_real3( "
                     + "- INPUT_0[" + to_string(3 * ii + 0) + "] / SCALING_FACTOR[0], "
                     + "- INPUT_0[" + to_string(3 * ii + 1) + "] / SCALING_FACTOR[0], "
                     + "- INPUT_0[" + to_string(3 * ii + 2) + "] / SCALING_FACTOR[0]) ;\n";
     }
+    temp_string += "}\nelse { \n";
+    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+        temp_string += "    force" + to_string(ii + 1) + " = make_real3(0.0);\n";
+    } 
+    temp_string += "}\n";
     source_code_for_force_before_replacement += temp_string;
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
