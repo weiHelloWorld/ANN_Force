@@ -96,10 +96,11 @@ num_of_rows = NUM_OF_NODES[1];
 num_of_cols = NUM_OF_NODES[0];
 
 for (int ii = index; ii < num_of_rows; ii += num_of_parallel_threads) {
-    INPUT_1[ii] = BIAS_0[ii];
+    float temp = BIAS_0[ii];
     for (int jj = 0; jj < num_of_cols; jj ++) {
-        INPUT_1[ii] += COEFF_0[ii * num_of_cols + jj] * OUTPUT_0[jj];
+        temp += COEFF_0[ii * num_of_cols + jj] * OUTPUT_0[jj];
     }
+    INPUT_1[ii] = temp;
 }
 
 __syncthreads();
@@ -119,10 +120,11 @@ __syncthreads();
 num_of_rows = NUM_OF_NODES[2];
 num_of_cols = NUM_OF_NODES[1];
 for (int ii = index; ii < num_of_rows; ii += num_of_parallel_threads) {
-    INPUT_2[ii] = BIAS_1[ii];
+    float temp = BIAS_1[ii];
     for (int jj = 0; jj < num_of_cols; jj ++) {
-        INPUT_2[ii] += COEFF_1[ii * num_of_cols + jj] * OUTPUT_1[jj];
+        temp += COEFF_1[ii * num_of_cols + jj] * OUTPUT_1[jj];
     }
+    INPUT_2[ii] = temp;
 }
 __syncthreads();
 if (LAYER_TYPES[1] == 0) { // linear
@@ -154,10 +156,11 @@ __syncthreads();
 num_of_rows = NUM_OF_NODES[2];
 num_of_cols = NUM_OF_NODES[1];
 for (int ii = index; ii < num_of_cols; ii += num_of_parallel_threads) {
-    INPUT_1[ii] = 0;
+    float temp = 0;
     for (int jj = 0; jj < num_of_rows; jj ++) {
-        INPUT_1[ii] += COEFF_1[ii + jj * num_of_cols] * INPUT_2[jj];
+        temp += COEFF_1[ii + jj * num_of_cols] * INPUT_2[jj];
     }
+    INPUT_1[ii] = temp;
 }
 __syncthreads();
 if (LAYER_TYPES[0] == 1) {
@@ -171,10 +174,11 @@ __syncthreads();
 num_of_rows = NUM_OF_NODES[1];
 num_of_cols = NUM_OF_NODES[0];
 for (int ii = index; ii < num_of_cols; ii += num_of_parallel_threads) {
-    INPUT_0[ii] = 0;
+    float temp = 0;
     for (int jj = 0; jj < num_of_rows; jj ++) {
-        INPUT_0[ii] += COEFF_0[ii + jj * num_of_cols] * INPUT_1[jj];
+        temp += COEFF_0[ii + jj * num_of_cols] * INPUT_1[jj];
     }
+    INPUT_0[ii] = temp;
 }
 __syncthreads();
 
