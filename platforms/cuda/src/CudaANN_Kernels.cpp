@@ -95,10 +95,13 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     numBonds = 1; 
     int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
-    vector<vector<int> > index_of_atoms_in_the_force(numBonds);
-    index_of_atoms_in_the_force[0] = force.get_index_of_backbone_atoms();
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        index_of_atoms_in_the_force[0][ii] -= 1;  // because in pdb file, index start with 1
+    int num_of_parallel_threads = 60;
+    vector<vector<int> > index_of_atoms_in_the_force(num_of_parallel_threads);
+    for (int jj = 0; jj < num_of_parallel_threads; jj ++) {
+        index_of_atoms_in_the_force[jj] = force.get_index_of_backbone_atoms();
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+            index_of_atoms_in_the_force[jj][ii] -= 1;  // because in pdb file, index start with 1
+        }
     }
 
     // convert to CUDA array
@@ -173,6 +176,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
     assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
     string temp_string;
+    temp_string += "int num_of_parallel_threads = " + to_string(num_of_parallel_threads) + ";\n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
         temp_string += "INPUT_0[" + to_string(3 * ii + 0) + "] = pos" + to_string(ii + 1) + ".x / SCALING_FACTOR[0];\n";
         temp_string += "INPUT_0[" + to_string(3 * ii + 1) + "] = pos" + to_string(ii + 1) + ".y / SCALING_FACTOR[0];\n";
@@ -191,8 +195,8 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
     cu.getBondedUtilities().addInteraction(index_of_atoms_in_the_force, source_code_for_force_after_replacement , force.getForceGroup());
-    cout << "before replacement:\n" << source_code_for_force_before_replacement << "\nafter replacement:\n" 
-        << source_code_for_force_after_replacement << endl; 
+    cout << "before replacement:\n" << source_code_for_force_before_replacement << endl;
+    // cout << "after replacement:\n" << source_code_for_force_after_replacement << endl; 
     cu.addForce(new CudaANN_ForceInfo(force));
 }
 
