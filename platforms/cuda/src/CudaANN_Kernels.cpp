@@ -143,11 +143,11 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         coeff_1 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_coeffients_of_connections()[1]), "coeff_1");
         bias_0 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_values_of_biased_nodes()[0]), "bias_0");
         bias_1 = convert_vector_to_CudaArray(convert_vector_of_type_to_float(force.get_values_of_biased_nodes()[1]), "bias_1");
-        float temp[50];
-        get_data_from_CudaArray(coeff_0, temp);
-        for (int ii = 0; ii < 50; ii ++) {
-            cout << temp[ii] << "\t";
-        }
+        // float temp[50];
+        // get_data_from_CudaArray(coeff_0, temp);
+        // for (int ii = 0; ii < 50; ii ++) {
+        //     cout << temp[ii] << "\t";
+        // }
     }
 
     

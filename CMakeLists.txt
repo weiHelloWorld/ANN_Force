@@ -15,7 +15,7 @@ IF(APPLE)
     SET(EXTRA_COMPILE_FLAGS "-msse2 -stdlib=libc++")
 ENDIF(APPLE)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
 # Select where to install
 IF(${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT})
