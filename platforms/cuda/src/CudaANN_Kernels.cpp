@@ -176,9 +176,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
     assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
     stringstream temp_string;
-    temp_string << "int num_of_parallel_threads = " << num_of_parallel_threads << ";\n"
-                << "int num_of_rows, num_of_cols;\n"
-                << "float force_constant = " << force.get_force_constant() << ";\n";
+    // temp_string << "int num_of_parallel_threads = " << num_of_parallel_threads << ";\n";
+    // temp_string << "int num_of_rows, num_of_cols;\n";
+    temp_string << "float force_constant = " << force.get_force_constant() << ";\n";
     
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
         temp_string << "INPUT_0[" << (3 * ii + 0) << "] = pos" << (ii + 1) << ".x / " << force.get_scaling_factor() << ";\n";
@@ -190,7 +190,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     temp_string << "// forward propagation\n";
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
 
-        temp_string << "for (int ii = index; ii < " << (temp_num_of_nodes[ii + 1]) << "; ii += num_of_parallel_threads) {\n";
+        temp_string << "for (int ii = index; ii < " << (temp_num_of_nodes[ii + 1]) << "; ii += " << num_of_parallel_threads << ") {\n";
         temp_string << "    float temp = BIAS_" << (ii) << "[ii];\n";
         temp_string << "    for (int jj = 0; jj < " << (temp_num_of_nodes[ii]) << "; jj ++) {\n";
         temp_string << "        temp += COEFF_" << (ii) << "[ii * " << (temp_num_of_nodes[ii]) << " + jj] * INPUT_" << (ii) << "[jj];\n";
@@ -206,7 +206,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     }
     temp_string << "// backward propagation, INPUT_{0,1,2} are reused to store derivatives in each layer\n";
     int dim_of_PC_space = temp_num_of_nodes[NUM_OF_LAYERS - 1];
-    temp_string << "for (int ii = index; ii < " << dim_of_PC_space << "; ii += num_of_parallel_threads) {\n";
+    temp_string << "for (int ii = index; ii < " << dim_of_PC_space << "; ii += " << num_of_parallel_threads << ") {\n";
     temp_string << "    float temp = INPUT_" << (NUM_OF_LAYERS - 1) << "[ii];\n";
     temp_string << "    energy += 0.5 * (temp - POTENTIAL_CENTER[ii]) * (temp - POTENTIAL_CENTER[ii]) * force_constant;\n";
     if (force.get_layer_types()[NUM_OF_LAYERS - 2] == "Tanh") {
@@ -218,7 +218,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     temp_string << "}\n";
     temp_string << "__syncthreads();\n";
     for (int ii = NUM_OF_LAYERS - 1; ii > 0; ii --) {
-        temp_string << "for (int ii = index; ii < " << temp_num_of_nodes[ii - 1] << "; ii += num_of_parallel_threads) {\n";
+        temp_string << "for (int ii = index; ii < " << temp_num_of_nodes[ii - 1] << "; ii += " << num_of_parallel_threads << ") {\n";
         temp_string << "    float temp = 0;\n";
         temp_string << "    for (int jj = 0; jj < " << temp_num_of_nodes[ii] << "; jj ++) {\n";
         temp_string << "        temp += COEFF_" << (ii - 1) << "[ii + jj * " << temp_num_of_nodes[ii - 1] << "] * INPUT_" << ii << "[jj];\n";
