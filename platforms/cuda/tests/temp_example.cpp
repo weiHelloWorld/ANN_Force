@@ -91,6 +91,7 @@ void test(string mode)
             for (int ii = 0; ii < num_of_atoms; ii ++) {
                 print_Vec3(forces[ii]);
             }
+            printf("energy = %f\n", energy_1);
         }
 
         double delta = 0.005;
