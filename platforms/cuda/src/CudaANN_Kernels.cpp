@@ -177,10 +177,12 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
     string temp_string;
     temp_string += "int num_of_parallel_threads = " + to_string(num_of_parallel_threads) + ";\n";
+    temp_string += "float scaling_factor = SCALING_FACTOR[0];\n";
+    
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string += "INPUT_0[" + to_string(3 * ii + 0) + "] = pos" + to_string(ii + 1) + ".x / SCALING_FACTOR[0];\n";
-        temp_string += "INPUT_0[" + to_string(3 * ii + 1) + "] = pos" + to_string(ii + 1) + ".y / SCALING_FACTOR[0];\n";
-        temp_string += "INPUT_0[" + to_string(3 * ii + 2) + "] = pos" + to_string(ii + 1) + ".z / SCALING_FACTOR[0];\n";
+        temp_string += "INPUT_0[" + to_string(3 * ii + 0) + "] = pos" + to_string(ii + 1) + ".x / scaling_factor;\n";
+        temp_string += "INPUT_0[" + to_string(3 * ii + 1) + "] = pos" + to_string(ii + 1) + ".y / scaling_factor;\n";
+        temp_string += "INPUT_0[" + to_string(3 * ii + 2) + "] = pos" + to_string(ii + 1) + ".z / scaling_factor;\n";
     }
     temp_string += "\n";
     source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
@@ -193,9 +195,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     temp_string += "if (index == 0) { \n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
         temp_string += "    force" + to_string(ii + 1) + " = make_real3( "
-                    + "- INPUT_0[" + to_string(3 * ii + 0) + "] / SCALING_FACTOR[0], "
-                    + "- INPUT_0[" + to_string(3 * ii + 1) + "] / SCALING_FACTOR[0], "
-                    + "- INPUT_0[" + to_string(3 * ii + 2) + "] / SCALING_FACTOR[0]) ;\n";
+                    + "- INPUT_0[" + to_string(3 * ii + 0) + "] / scaling_factor, "
+                    + "- INPUT_0[" + to_string(3 * ii + 1) + "] / scaling_factor, "
+                    + "- INPUT_0[" + to_string(3 * ii + 2) + "] / scaling_factor) ;\n";
     }
     temp_string += "}\nelse { \n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {

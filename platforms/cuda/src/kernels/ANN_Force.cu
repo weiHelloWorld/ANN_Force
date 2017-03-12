@@ -1,7 +1,8 @@
-// real3 force1 = make_real3(- FORCE_CONSTANT[0] * (pos1.x - POTENTIAL_CENTER[0]), 0.0, 0.0) ; 
+// real3 force1 = make_real3(- force_constant * (pos1.x - POTENTIAL_CENTER[0]), 0.0, 0.0) ; 
 // real3 force2 = make_real3(0.0, 0.0, 0.0);
 
 int num_of_rows, num_of_cols;
+float force_constant = FORCE_CONSTANT[0];
 
 // // forward propagation
 // // input layer
@@ -50,8 +51,8 @@ int num_of_rows, num_of_cols;
 // // backward propagation, INPUT_{0,1,2} are reused to store derivatives in each layer
 // // layer 2
 // for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
-//     INPUT_2[ii] = (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
-//     energy += 0.5 * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
+//     INPUT_2[ii] = (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * force_constant;
+//     energy += 0.5 * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * force_constant;
 // }
 // if (LAYER_TYPES[1] == 1) {
 //     for (int ii = 0; ii < NUM_OF_NODES[2]; ii ++) {
@@ -139,8 +140,8 @@ __syncthreads();
 // backward propagation, INPUT_{0,1,2} are reused to store derivatives in each layer
 // layer 2
 for (int ii = index; ii < NUM_OF_NODES[2]; ii += num_of_parallel_threads) {
-    INPUT_2[ii] = (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
-    energy += 0.5 * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * FORCE_CONSTANT[0];
+    INPUT_2[ii] = (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * force_constant;
+    energy += 0.5 * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * (OUTPUT_2[ii] - POTENTIAL_CENTER[ii]) * force_constant;
 }
 if (LAYER_TYPES[1] == 1) {
     for (int ii = index; ii < NUM_OF_NODES[2]; ii += num_of_parallel_threads) {
