@@ -410,8 +410,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alan
     return;
 }
 
-void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates() {
-    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates\n";
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates(string temp_platform) {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates ";
+    cout << "(" << temp_platform << ")\n";
     System system;
     int num_of_atoms = 4;
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -438,9 +439,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_data_type_in_input_layer(1);
-    cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
+    // cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
     system.addForce(forceField);
-    Platform& platform = Platform::getPlatformByName("Reference");
+    Platform& platform = Platform::getPlatformByName(temp_platform);
     Context context(system, integrator, platform);
     vector<Vec3> positions_1(num_of_atoms);
     positions_1[0] = Vec3(-1, -2, -3);
@@ -503,7 +504,8 @@ int main(int argc, char* argv[]) {
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;

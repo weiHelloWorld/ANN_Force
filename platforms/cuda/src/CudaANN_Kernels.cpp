@@ -185,6 +185,21 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
         temp_string << "INPUT_0[" << (3 * ii + 2) << "] = pos" << (ii + 1) << ".z / " << force.get_scaling_factor() << ";\n";
     }
+    bool remove_translation_degrees_of_freedom  = true;
+    if (remove_translation_degrees_of_freedom) {
+        assert (num_of_parallel_threads >= 3);
+        temp_string << "float coor_center_of_mass[3] = {0,0,0};\n";
+        temp_string << "if (index < 3) {\n";
+        temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
+        temp_string << "        coor_center_of_mass[index] += INPUT_0[ii];\n";
+        temp_string << "    }\n";
+        temp_string << "    coor_center_of_mass[index] /= " << num_of_backbone_atoms << ";\n";
+        temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
+        temp_string << "        INPUT_0[ii] -= coor_center_of_mass[index];\n";
+        temp_string << "    }\n";
+        temp_string << "}\n";
+        // temp_string << "__syncthreads();\n";
+    }
     temp_string << "\n"; 
     temp_string << "__syncthreads();\n";
     temp_string << "// forward propagation\n";
@@ -258,8 +273,10 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
     cu.getBondedUtilities().addInteraction(index_of_atoms_in_the_force, source_code_for_force_after_replacement , force.getForceGroup());
+#ifdef BUDEG_CUDA
     cout << "before replacement:\n" << source_code_for_force_before_replacement << endl;
     // cout << "after replacement:\n" << source_code_for_force_after_replacement << endl; 
+#endif
     cu.addForce(new CudaANN_ForceInfo(force));
 }
 
