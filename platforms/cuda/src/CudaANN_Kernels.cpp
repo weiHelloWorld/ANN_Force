@@ -95,7 +95,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     numBonds = 1; 
     int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
-    int num_of_parallel_threads = 60;
+    int num_of_parallel_threads = 60;    // FIXME: there should be better way to determine this value
     vector<vector<int> > index_of_atoms_in_the_force(num_of_parallel_threads);
     for (int jj = 0; jj < num_of_parallel_threads; jj ++) {
         index_of_atoms_in_the_force[jj] = force.get_index_of_backbone_atoms();
