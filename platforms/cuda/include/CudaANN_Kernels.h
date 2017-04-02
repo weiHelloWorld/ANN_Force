@@ -102,6 +102,7 @@ public:
     }
 
 private:
+    bool remove_translation_degrees_of_freedom  = true;
     int numBonds;
     bool hasInitializedKernel;
     OpenMM::CudaContext& cu;

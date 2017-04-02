@@ -185,7 +185,6 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
         temp_string << "INPUT_0[" << (3 * ii + 2) << "] = pos" << (ii + 1) << ".z / " << force.get_scaling_factor() << ";\n";
     }
-    bool remove_translation_degrees_of_freedom  = true;
     if (remove_translation_degrees_of_freedom) {
         assert (num_of_parallel_threads >= 3);
         temp_string << "float coor_center_of_mass[3] = {0,0,0};\n";
@@ -252,6 +251,15 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
 
     temp_string << "\n";
+    temp_string << "real3 average_deriv_on_input_layer = make_real3(0.0);\n";
+    if (remove_translation_degrees_of_freedom) {
+        temp_string << "for (int ii = 0; ii < " << num_of_backbone_atoms << "; ii ++ ) {\n";
+        temp_string << "    average_deriv_on_input_layer.x += INPUT_0[3 * ii + 0];\n";
+        temp_string << "    average_deriv_on_input_layer.y += INPUT_0[3 * ii + 1];\n";
+        temp_string << "    average_deriv_on_input_layer.z += INPUT_0[3 * ii + 2];\n";
+        temp_string << "}\n";
+        temp_string << "average_deriv_on_input_layer = average_deriv_on_input_layer / " << num_of_backbone_atoms << ";\n";
+    }
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
         temp_string << "real3 force" << (ii + 1) << ";\n";
     } 
@@ -259,9 +267,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     temp_string << "if (index == 0) { \n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
         temp_string << "    force" << (ii + 1) << " = make_real3( ";
-        temp_string << "- INPUT_0[" << (3 * ii + 0) << "] / " << force.get_scaling_factor() << ", ";
-        temp_string << "- INPUT_0[" << (3 * ii + 1) << "] / " << force.get_scaling_factor() << ", ";
-        temp_string << "- INPUT_0[" << (3 * ii + 2) << "] / " << force.get_scaling_factor() << ") ;\n";
+        temp_string << "- (INPUT_0[" << (3 * ii + 0) << "] - average_deriv_on_input_layer.x) / " << force.get_scaling_factor() << ", ";
+        temp_string << "- (INPUT_0[" << (3 * ii + 1) << "] - average_deriv_on_input_layer.y) / " << force.get_scaling_factor() << ", ";
+        temp_string << "- (INPUT_0[" << (3 * ii + 2) << "] - average_deriv_on_input_layer.z) / " << force.get_scaling_factor() << ") ;\n";
     }
     temp_string << "}\nelse { \n";
     for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
