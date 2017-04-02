@@ -120,6 +120,7 @@ public:
 
 
 private:
+    bool remove_translation_degrees_of_freedom  = true;
     double potential_energy;
     vector<int> num_of_nodes = vector<int>(NUM_OF_LAYERS);    // store the number of nodes for first 3 layers
     std::vector<std::vector<int> > list_of_index_of_atoms_forming_dihedrals;

@@ -132,7 +132,6 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
             }
         }
         assert (input_layer_data.size() == index_of_backbone_atoms.size() * 3);
-        bool remove_translation_degrees_of_freedom  = true;
         if (remove_translation_degrees_of_freedom) {
             RealOpenMM coor_center_of_mass[3] = {0,0,0};
             for (int ii = 0; ii < input_layer_data.size(); ii ++) {
@@ -366,9 +365,16 @@ void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer
         }
     }
     else {
-        for (int ii = 0; ii < index_of_backbone_atoms.size(); ii ++) {
+        int num_of_backbone_atoms = index_of_backbone_atoms.size();
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
             for (int jj = 0; jj < 3; jj ++) {
                 forceData[index_of_backbone_atoms[ii] - 1][jj] += - derivatives_of_first_layer[3 * ii + jj] / scaling_factor;
+                if (remove_translation_degrees_of_freedom) {  // when translation is removed, need to calculate force with a Jacobian
+                    for (int kk = 0; kk < num_of_backbone_atoms; kk ++) {
+                        forceData[index_of_backbone_atoms[ii] - 1][jj]
+                             += derivatives_of_first_layer[3 * kk + jj] / scaling_factor / num_of_backbone_atoms;
+                    }
+                }
             }
         }
     }
