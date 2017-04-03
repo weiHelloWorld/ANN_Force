@@ -8,7 +8,8 @@
 #include "../../platforms/reference/ANN_ReferenceKernelFactory.h"
 #include "../../platforms/reference/ANN_ReferenceKernels.h"
 #include <fstream>
-
+#include <cstdlib> 
+#include <ctime> 
 #include <iostream>
 #include <vector>
 #include <stdio.h>
@@ -489,6 +490,91 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     return;
 }
 
+vector<double> generate_random_array(int size, int seed) {
+    srand((unsigned)seed);
+    vector<double> temp_array;
+    for(int i = 0; i < size; i ++){ 
+        temp_array.push_back( (rand() % 10) / 100.0);
+    }
+    return temp_array;
+}
+
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(string temp_platform, int seed) {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates ";
+    cout << "(" << temp_platform << ")\n";
+    System system;
+    int num_of_atoms = 4;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.01);
+    ANN_Force* forceField = new ANN_Force();
+    forceField -> set_num_of_nodes(vector<int>({12, 150, 4}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
+    vector<vector<double> > coeff;
+    coeff.push_back(generate_random_array(12 * 150, seed));
+    coeff.push_back(generate_random_array(150 * 4, seed));
+    // printf("temp = %lf\n", coeff[0][0]);
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_scaling_factor(1);
+    forceField -> set_index_of_backbone_atoms({1,2,3,4});
+    forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
+    vector<vector<double> > biased_notes_vec;
+    biased_notes_vec.push_back(generate_random_array(150, seed));
+    biased_notes_vec.push_back(generate_random_array(4, seed));
+    forceField -> set_values_of_biased_nodes(biased_notes_vec);
+    forceField -> set_data_type_in_input_layer(1);
+    // cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
+    system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName(temp_platform);
+    Context context(system, integrator, platform);
+    vector<Vec3> positions_1(num_of_atoms);
+    positions_1[0] = Vec3(-1, -2, -3);
+    positions_1[1] = Vec3(0, 0, 0);
+    positions_1[2] = Vec3(1, 0, 0);
+    positions_1[3] = Vec3(0, 0, 2);
+    context.setPositions(positions_1);
+
+    double energy_1, energy_2, energy_3;
+
+    vector<Vec3> forces;
+    vector<Vec3> temp_positions;
+
+    State state = context.getState(State::Forces | State::Energy | State::Positions);
+    {
+        forces = state.getForces();
+        energy_1 = state.getPotentialEnergy();
+        // printf("energy_1 = %lf\n", energy_1);
+        temp_positions = state.getPositions();
+        printf("forces:\n");
+        for (int ii = 0; ii < num_of_atoms; ii ++) {
+            print_Vec3(forces[ii]);
+        }
+    }
+
+    double delta = 0.005;
+    auto positions_2 = positions_1;
+    auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        for (int jj = 0; jj < 3; jj ++) {
+            positions_2 = positions_1;
+            positions_2[ii][jj] += delta;
+            context.setPositions(positions_2);
+            energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
+            // printf("energy_2 = %lf\n", energy_2);
+            numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
+        }
+    }
+    // print out numerical results
+    printf("numerical_derivatives = \n");
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        print_Vec3(numerical_derivatives[ii]);
+    }
+    
+    return;
+}
+
 int main(int argc, char* argv[]) {
     try {
         std::ifstream file_containing_location_of_plugin("directory_of_plugin.txt");
@@ -506,6 +592,8 @@ int main(int argc, char* argv[]) {
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system("Reference", 1);
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system("CUDA", 1);
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;
