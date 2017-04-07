@@ -187,14 +187,14 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     }
     if (remove_translation_degrees_of_freedom) {
         assert (num_of_parallel_threads >= 3);
-        temp_string << "float coor_center_of_mass[3] = {0,0,0};\n";
+        temp_string << "float coor_center_of_mass = 0;\n";  // actually coor_center_of_mass is one component, each thread only needs to handle one component
         temp_string << "if (index < 3) {\n";
         temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
-        temp_string << "        coor_center_of_mass[index] += INPUT_0[ii];\n";
+        temp_string << "        coor_center_of_mass += INPUT_0[ii];\n";
         temp_string << "    }\n";
-        temp_string << "    coor_center_of_mass[index] /= " << num_of_backbone_atoms << ";\n";
+        temp_string << "    coor_center_of_mass /= " << num_of_backbone_atoms << ";\n";
         temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
-        temp_string << "        INPUT_0[ii] -= coor_center_of_mass[index];\n";
+        temp_string << "        INPUT_0[ii] -= coor_center_of_mass;\n";
         temp_string << "    }\n";
         temp_string << "}\n";
         // temp_string << "__syncthreads();\n";
