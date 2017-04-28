@@ -93,7 +93,6 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // num_of_nodes = CudaArray::create<int>(cu, NUM_OF_LAYERS, "num_of_nodes_cuda");
     // num_of_nodes -> upload(force.get_num_of_nodes());
 
-    numBonds = 1; 
     int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
     int num_of_parallel_threads = 60;    // FIXME: there should be better way to determine this value
     vector<vector<int> > index_of_atoms_in_the_force(num_of_parallel_threads);
