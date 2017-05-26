@@ -2,7 +2,6 @@ test_ANN_Force
 test_ANN_package
 *.pdb
 *.txt
-temp.py
 *.so
 *.o
 ANN_wrap.cxx

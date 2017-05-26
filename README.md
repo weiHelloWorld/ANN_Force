@@ -33,7 +33,31 @@ This package should be used together with OpenMM simulation package and training
 
 ## Testing
 
+```bash
+root_dir=openmmapi/tests
+cd ${root_dir}
+echo "running tests for numerical calculations..."
+make test_ANN_package
+./test_ANN_package
+echo "running test for Python wrapper..."
+python test_Python_wrapper.py
+```
 
+## Implementation details for CUDA platform
+
+Here are some implementation details for CUDA platform if you are interested:
+
+- Parallelization is realized by duplicating a single `ANN_Force` to get multiple copies for many threads.  By doing this, it can be well integrated into implementation of `CudaBondedUtilities` class (a force can only be assigned to one thread at most by default, that is why we need to get multiple copies for the force).
+
+- We use **two-step code generation** to improve performance: 
+    - use C++ to dynamically generate cuda framework code.  The purpose of this additional step is to
+        - create code with minimal computation (remove unnecessary conditionals and loops), where C++ works for pre-preprocessing optimization
+        - reduce memory access by replacing variable in shared memory with number literals
+    - do preprocessing to get runnable cuda code.
+
+- Inter-block synchronization is not done (I use all threads in one block to avoid this issue), but based on current benchmark, I do not expect it would accelerate computation too much.
+
+- There is still room for optimization, in additional to synchronization issue, how to store variables in proper memory space and how to achieve workload balance among different threads would possibly make a difference.
 
 ## TODO
 
