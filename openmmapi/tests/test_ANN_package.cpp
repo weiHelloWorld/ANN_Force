@@ -511,25 +511,28 @@ vector<double> generate_random_array(int size, int seed) {
     return temp_array;
 }
 
-void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(string temp_platform, int seed) {
-    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates ";
-    cout << "(" << temp_platform << ")\n";
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+    string temp_platform, int num_of_atoms, int seed) {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system ";
+    cout << "(platform = " << temp_platform << ", num_of_atoms = " << num_of_atoms << ")\n";
     System system;
-    int num_of_atoms = 4;
+    vector<int> index_of_backbone_atoms(num_of_atoms);
     for (int ii = 0; ii < num_of_atoms; ii ++) {
-        system.addParticle(1.0);    
+        system.addParticle(1.0);   
+        index_of_backbone_atoms[ii] = ii + 1; 
     }
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
-    forceField -> set_num_of_nodes(vector<int>({12, 150, 4}));
+    int num_nodes_first_layer = 3 * num_of_atoms;
+    forceField -> set_num_of_nodes(vector<int>({num_nodes_first_layer, 150, 4}));
     forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
     vector<vector<double> > coeff;
-    coeff.push_back(generate_random_array(12 * 150, seed));
+    coeff.push_back(generate_random_array(num_nodes_first_layer * 150, seed));
     coeff.push_back(generate_random_array(150 * 4, seed));
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
     forceField -> set_scaling_factor(1);
-    forceField -> set_index_of_backbone_atoms({1,2,3,4});
+    forceField -> set_index_of_backbone_atoms(index_of_backbone_atoms);
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     vector<vector<double> > biased_notes_vec;
     biased_notes_vec.push_back(generate_random_array(150, seed));
@@ -540,10 +543,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     Platform& platform = Platform::getPlatformByName(temp_platform);
     Context context(system, integrator, platform);
     vector<Vec3> positions_1(num_of_atoms);
-    positions_1[0] = Vec3(-1, -2, -3);
-    positions_1[1] = Vec3(0, 0, 0);
-    positions_1[2] = Vec3(1, 0, 0);
-    positions_1[3] = Vec3(0, 0, 2);
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        positions_1[ii] = Vec3((rand() % 100) / 20.0, (rand() % 100) / 20.0, (rand() % 100) / 20.0);
+    }
     context.setPositions(positions_1);
 
     double energy_1, energy_2, energy_3;
@@ -563,7 +565,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
         }
 #endif
     }
-
     double delta = 0.005;
     auto positions_2 = positions_1;
     auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
@@ -584,7 +585,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     }
 #endif
     assert_forces_equal_derivatives(forces, numerical_derivatives);
-
     return;
 }
 
@@ -595,18 +595,23 @@ int main(int argc, char* argv[]) {
         std::getline(file_containing_location_of_plugin, directory_of_plugin);
         cout << directory_of_plugin << endl;
         OpenMM::Platform::loadPluginsFromDirectory(directory_of_plugin);
-        // test_1();
-        // test_sincos_of_dihedrals_four_atom();
-        test_forward_and_backward_prop();
-        test_forward_and_backward_prop_2();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system("Reference", 1);
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system("CUDA", 1);
+        // test_forward_and_backward_prop();
+        // test_forward_and_backward_prop_2();
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives();
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
+        // for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
+        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+        //         "Reference", num_of_atoms, 1);
+        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+        //         "CUDA", num_of_atoms, 1);
+        // }
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+                "CUDA", 500, 1);
+        
     }
     catch(const exception& e) {
         cout << "exception: " << e.what() << endl;
