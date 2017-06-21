@@ -1,15 +1,15 @@
 HOME_DIR=/home/fisiksnju
 # SOURCE_DIR=/home/weichen9/weichen9/to_cluster/ANN_Force
-SOURCE_DIR=/home/fisiksnju/Dropbox/temp_Linux/ANN_Force
+SOURCE_DIR=$(HOME_DIR)/Dropbox/temp_Linux/ANN_Force
 
-OpenMM_INSTALL_DIR=$(HOME_DIR)/.anaconda2/include
+OpenMM_INSTALL_DIR=$(HOME_DIR)/.openmm/include
 PYTHON_PACKAGE_DIR=$(HOME_DIR)/.anaconda2/lib/python2.7/site-packages
 
 CFLAGS = -g -std=c++11
 
 FCPPLIBS = -lstdc++
 
-LIB_DIR=$(HOME_DIR)/.anaconda2/lib
+LIB_DIR=$(HOME_DIR)/.openmm/lib
 PLUGIN_DIR=$(LIB_DIR)/plugins
 INCLUDE_OPTION=-I$(OpenMM_INSTALL_DIR) -I$(OpenMM_INSTALL_DIR)/openmm/reference/ -I$(OpenMM_INSTALL_DIR)/openmm/internal -I$(SOURCE_DIR)/openmmapi/include -I$(HOME_DIR)/.anaconda2/include/python2.7/
 LIB_OPTION=-L$(LIB_DIR) -lOpenMM -L$(LIB_DIR) -lANN -L$(PLUGIN_DIR) -lANNReference

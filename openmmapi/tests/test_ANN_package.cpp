@@ -20,6 +20,8 @@ using namespace OpenMM;
 using namespace std;
 
 const double TOL = 1e-5;
+const double FORCE_TOL = 5e-2;
+// #define PRINT_FORCE
 
 void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
     for (int ii = 0; ii < num_of_rows; ii ++) {
@@ -172,6 +174,13 @@ void test_forward_and_backward_prop_2() {
     return;
 }
 
+void assert_forces_equal_derivatives(vector<Vec3> forces, vector<Vec3> numerical_derivatives) {
+    for (int ii = 0; ii < forces.size(); ii ++) {
+        ASSERT_EQUAL_VEC(forces[ii], - numerical_derivatives[ii], FORCE_TOL);
+    }
+    return;
+}
+
 void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
     cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives\n";
     System system;
@@ -220,15 +229,12 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
         temp_positions = state.getPositions();
+#ifdef PRINT_FORCE
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
-        // printf("positions:\n");
-        // for (int ii = 0; ii < num_of_atoms; ii ++) {
-        //     print_Vec3(temp_positions[ii]);
-        // }
-        // printf("potential energy = %lf\n", energy_1);
+#endif
     }
 
     double delta = 0.005;
@@ -240,16 +246,17 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives() {
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
-            // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
     // print out numerical results
+#ifdef PRINT_FORCE
     printf("numerical_derivatives = \n");
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
-    
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
     return;
 }
 
@@ -303,10 +310,12 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
         temp_positions = state.getPositions();
+#ifdef PRINT_FORCE
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
+#endif
     }
 
     double delta = 0.005;
@@ -318,15 +327,17 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circ
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Forces | State::Energy | State::Positions).getPotentialEnergy();
-            // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
     // print out numerical results
+#ifdef PRINT_FORCE
     printf("numerical_derivatives = \n");
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
 
     return;
 }
@@ -378,15 +389,12 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alan
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
         temp_positions = state.getPositions();
+#ifdef PRINT_FORCE
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
-        // printf("positions:\n");
-        // for (int ii = 0; ii < num_of_atoms; ii ++) {
-        //     print_Vec3(temp_positions[ii]);
-        // }
-        // printf("potential energy = %lf\n", energy_1);
+#endif
     }
 
     double delta = 0.005;
@@ -398,15 +406,17 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alan
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
-            // printf("potential energy = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
     // print out numerical results
+#ifdef PRINT_FORCE
     printf("numerical_derivatives = \n");
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
     
     return;
 }
@@ -440,7 +450,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     forceField -> set_potential_center(vector<double>({0, 0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3,0.4}, {0.5,0.6,0.4,0.3}});
     forceField -> set_data_type_in_input_layer(1);
-    // cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName(temp_platform);
     Context context(system, integrator, platform);
@@ -460,12 +469,13 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     {
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
-        // printf("energy_1 = %lf\n", energy_1);
         temp_positions = state.getPositions();
+#ifdef PRINT_FORCE
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
+#endif
     }
 
     double delta = 0.005;
@@ -477,15 +487,17 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
-            // printf("energy_2 = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
     // print out numerical results
+#ifdef PRINT_FORCE
     printf("numerical_derivatives = \n");
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
     
     return;
 }
@@ -514,7 +526,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     vector<vector<double> > coeff;
     coeff.push_back(generate_random_array(12 * 150, seed));
     coeff.push_back(generate_random_array(150 * 4, seed));
-    // printf("temp = %lf\n", coeff[0][0]);
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
     forceField -> set_scaling_factor(1);
@@ -525,7 +536,6 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     biased_notes_vec.push_back(generate_random_array(4, seed));
     forceField -> set_values_of_biased_nodes(biased_notes_vec);
     forceField -> set_data_type_in_input_layer(1);
-    // cout << "data_type_in_input_layer = " << forceField -> get_data_type_in_input_layer() << endl;
     system.addForce(forceField);
     Platform& platform = Platform::getPlatformByName(temp_platform);
     Context context(system, integrator, platform);
@@ -545,12 +555,13 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     {
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
-        // printf("energy_1 = %lf\n", energy_1);
         temp_positions = state.getPositions();
+#ifdef PRINT_FORCE
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
         }
+#endif
     }
 
     double delta = 0.005;
@@ -562,16 +573,18 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
             positions_2[ii][jj] += delta;
             context.setPositions(positions_2);
             energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
-            // printf("energy_2 = %lf\n", energy_2);
             numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
         }
     }
     // print out numerical results
+#ifdef PRINT_FORCE
     printf("numerical_derivatives = \n");
     for (int ii = 0; ii < num_of_atoms; ii ++) {
         print_Vec3(numerical_derivatives[ii]);
     }
-    
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
+
     return;
 }
 
