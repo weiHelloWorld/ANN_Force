@@ -31,6 +31,8 @@ Root permission may be needed.
 
 This package should be used together with OpenMM simulation package and training results of neural networks.  A good starting point would be tests in this framework: https://github.com/weiHelloWorld/accelerated_sampling_with_autoencoder.
 
+TODO: examples
+
 ## Testing
 
 ```bash
@@ -42,6 +44,11 @@ make test_ANN_package
 echo "running test for Python wrapper..."
 python test_Python_wrapper.py
 ```
+
+## Why don't we use OpenMM + Plumed with custom expressions for umbrella sampling?
+
+Because it is slow to use Plumed with OpenMM on CUDA.  The way it works is that at every time step OpenMM copies current state (positions/velocities/etc) to plumed and then receives calculated results from plumed and do post-computation (https://github.com/peastman/openmm-plumed/blob/master/platforms/cuda/src/CudaPlumedKernels.cpp#L198).  Since plumed does not run on CUDA, there would be significant communication overhead.
+
 
 ## Implementation details for CUDA platform
 

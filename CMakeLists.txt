@@ -5,7 +5,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 # We need to know where OpenMM is installed so we can access the headers and libraries.
-SET(OPENMM_DIR "/home/fisiksnju/.anaconda2" CACHE PATH "Where OpenMM is installed")
+SET(OPENMM_DIR "$ENV{HOME}/.openmm" CACHE PATH "Where OpenMM is installed")
 INCLUDE_DIRECTORIES("${OPENMM_DIR}/include")
 LINK_DIRECTORIES("${OPENMM_DIR}/lib" "${OPENMM_DIR}/lib/plugins")
 
@@ -22,7 +22,7 @@ IF(${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT})
     IF(WIN32)
         SET(CMAKE_INSTALL_PREFIX "$ENV{ProgramFiles}/OpenMM" CACHE PATH "Where to install the plugin" FORCE)
     ELSE(WIN32)
-        SET(CMAKE_INSTALL_PREFIX "/home/fisiksnju/.anaconda2" CACHE PATH "Where to install the plugin" FORCE)
+        SET(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.openmm" CACHE PATH "Where to install the plugin" FORCE)
     ENDIF(WIN32)
 ENDIF(${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT})
 
