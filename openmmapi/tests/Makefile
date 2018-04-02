@@ -1,11 +1,11 @@
-HOME_DIR=/home/fisiksnju
+HOME_DIR=/home/kengyangyao
 # SOURCE_DIR=/home/weichen9/weichen9/to_cluster/ANN_Force
 SOURCE_DIR=$(HOME_DIR)/Dropbox/temp_Linux/ANN_Force
 
 OpenMM_INSTALL_DIR=$(HOME_DIR)/.openmm/include
 PYTHON_PACKAGE_DIR=$(HOME_DIR)/.anaconda2/lib/python2.7/site-packages
 
-CFLAGS = -g -std=c++11
+CFLAGS = -g -std=c++11 -Wall -Wextra -fsanitize=address
 
 FCPPLIBS = -lstdc++
 

@@ -147,6 +147,22 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backb
     return;
 }
 
+const std::vector<std::vector<int> >& ANN_Force::get_list_of_pair_index_for_distances() const {
+    return list_of_pair_index_for_distances;
+}
+
+void ANN_Force::set_list_of_pair_index_for_distances(std::vector<std::vector<int> > temp_list_of_index) {
+    num_pairs = temp_list_of_index.size();
+    for (int ii = 0; ii < num_pairs; ii ++) {
+        list_of_pair_index_for_distances.push_back(std::vector<int>());
+        for (int jj = 0; jj < 2; jj ++) {
+            list_of_pair_index_for_distances[ii].push_back(temp_list_of_index[ii][jj] - 1); 
+            // should "-1", because in PDB file, the index starts from 1
+        }
+    }
+    return;
+}
+
 ForceImpl* ANN_Force::createImpl() const {
     return new ANN_ForceImpl(*this);
 }

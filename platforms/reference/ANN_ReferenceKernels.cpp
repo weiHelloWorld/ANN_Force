@@ -50,6 +50,7 @@ ReferenceCalcANN_ForceKernel::~ReferenceCalcANN_ForceKernel() {
 void ReferenceCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     num_of_nodes = force.get_num_of_nodes();
     list_of_index_of_atoms_forming_dihedrals = force.get_list_of_index_of_atoms_forming_dihedrals();
+    list_of_pair_index_for_distances = force.get_list_of_pair_index_for_distances();
     index_of_backbone_atoms = force.get_index_of_backbone_atoms();
     layer_types = force.get_layer_types();
     values_of_biased_nodes = force.get_values_of_biased_nodes();
@@ -121,10 +122,10 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_1(vector<RealVec>& positionDa
 RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionData, vector<RealVec>& forceData) {
     // test case
     vector<RealOpenMM> input_layer_data;
-    if (! data_type_in_input_layer) {  // inputs are cos and sin
+    if (data_type_in_input_layer == 0) {  // inputs are cos and sin
         get_cos_and_sin_of_dihedral_angles(positionData, input_layer_data);    
     }
-    else {        // inputs are Cartesian coordinates
+    else if (data_type_in_input_layer == 1) {        // inputs are Cartesian coordinates
         input_layer_data.resize(index_of_backbone_atoms.size() * 3);
         for (int ii = 0; ii < index_of_backbone_atoms.size(); ii ++) {   // flatten the 2D vector
             for (int jj = 0; jj < 3; jj ++) {
@@ -146,6 +147,15 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
             // for (auto item : input_layer_data) {
             //     cout << item << "\t";
             // }
+        }
+    }
+    else if (data_type_in_input_layer == 2) {  // inputs are pairwise distances
+        input_layer_data.resize(list_of_pair_index_for_distances.size());
+        for (int ii = 0; ii < list_of_pair_index_for_distances.size(); ii ++) {
+            RealVec& pos_1 = positionData[list_of_pair_index_for_distances[ii][0]] / scaling_factor;
+            RealVec& pos_2 = positionData[list_of_pair_index_for_distances[ii][1]] / scaling_factor;
+            RealVec diff_vec = pos_1 - pos_2;
+            input_layer_data[ii] = sqrt(diff_vec.dot(diff_vec));
         }
     }
 
@@ -359,12 +369,12 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
 void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer(vector<RealVec>& positionData,
                                                                             vector<RealVec>& forceData,
                                                                             vector<double>& derivatives_of_first_layer) {
-    if (!data_type_in_input_layer) {
+    if (data_type_in_input_layer == 0) {
         for (int ii = 0; ii < num_of_nodes[0] / 2; ii ++ ) {
             get_force_from_derivative_of_first_layer(2 * ii, 2 * ii + 1, positionData, forceData, derivatives_of_first_layer);
         }
     }
-    else {
+    else if (data_type_in_input_layer == 1) {
         int num_of_backbone_atoms = index_of_backbone_atoms.size();
         for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
             for (int jj = 0; jj < 3; jj ++) {
@@ -376,6 +386,17 @@ void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer
                     }
                 }
             }
+        }
+    }
+    else if (data_type_in_input_layer == 2) {
+        int num_pairs = list_of_pair_index_for_distances.size();
+        for (int ii = 0; ii < num_pairs; ii ++) {
+            std::vector<int>& pair_index = list_of_pair_index_for_distances[ii];
+            RealVec diff_vec = positionData[pair_index[0]] - positionData[pair_index[1]];
+            double temp_distance = sqrt(diff_vec.dot(diff_vec));
+            RealVec delta_F = diff_vec / (scaling_factor * temp_distance);
+            forceData[pair_index[0]] += delta_F;
+            forceData[pair_index[1]] -= delta_F;
         }
     }
     return;

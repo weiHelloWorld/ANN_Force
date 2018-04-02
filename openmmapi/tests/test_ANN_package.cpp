@@ -595,22 +595,22 @@ int main(int argc, char* argv[]) {
         std::getline(file_containing_location_of_plugin, directory_of_plugin);
         cout << directory_of_plugin << endl;
         OpenMM::Platform::loadPluginsFromDirectory(directory_of_plugin);
-        // test_forward_and_backward_prop();
-        // test_forward_and_backward_prop_2();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
-        // for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
-        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-        //         "Reference", num_of_atoms, 1);
-        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-        //         "CUDA", num_of_atoms, 1);
-        // }
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-                "CUDA", 500, 1);
+        test_forward_and_backward_prop();
+        test_forward_and_backward_prop_2();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
+        for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
+            test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+                "Reference", num_of_atoms, 1);
+            test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+                "CUDA", num_of_atoms, 1);
+        }
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+        //         "CUDA", 500, 1);
         
     }
     catch(const exception& e) {
