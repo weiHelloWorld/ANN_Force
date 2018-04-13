@@ -152,8 +152,8 @@ RealOpenMM ReferenceCalcANN_ForceKernel::candidate_2(vector<RealVec>& positionDa
     else if (data_type_in_input_layer == 2) {  // inputs are pairwise distances
         input_layer_data.resize(list_of_pair_index_for_distances.size());
         for (int ii = 0; ii < list_of_pair_index_for_distances.size(); ii ++) {
-            RealVec& pos_1 = positionData[list_of_pair_index_for_distances[ii][0]] / scaling_factor;
-            RealVec& pos_2 = positionData[list_of_pair_index_for_distances[ii][1]] / scaling_factor;
+            RealVec pos_1 = positionData[list_of_pair_index_for_distances[ii][0]] / scaling_factor;
+            RealVec pos_2 = positionData[list_of_pair_index_for_distances[ii][1]] / scaling_factor;
             RealVec diff_vec = pos_1 - pos_2;
             input_layer_data[ii] = sqrt(diff_vec.dot(diff_vec));
         }
