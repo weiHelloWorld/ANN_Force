@@ -13,9 +13,6 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
-
-// #include "../../platforms/reference/ANN_ReferenceKernelFactory.cpp"
-
 using namespace OpenMM;
 using namespace std;
 
@@ -590,11 +587,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
 
 int main(int argc, char* argv[]) {
     try {
-        std::ifstream file_containing_location_of_plugin("directory_of_plugin.txt");
-        std::string directory_of_plugin;
-        std::getline(file_containing_location_of_plugin, directory_of_plugin);
-        cout << directory_of_plugin << endl;
-        OpenMM::Platform::loadPluginsFromDirectory(directory_of_plugin);
+        OpenMM::Platform::loadPluginsFromDirectory("/home/kengyangyao/.openmm/lib/plugins");
         test_forward_and_backward_prop();
         test_forward_and_backward_prop_2();
         test_calculation_of_forces_by_comparing_with_numerical_derivatives();

@@ -134,7 +134,7 @@ private:
     double force_constant;
     double scaling_factor;
     int num_of_dihedrals;
-    int data_type_in_input_layer;  //   two options: 0 is cossin (default), 1 is Cartesian coordinates
+    int data_type_in_input_layer = 0;  //   two options: 0 is cossin (default), 1 is Cartesian coordinates
 };
 
 

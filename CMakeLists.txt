@@ -77,8 +77,8 @@ INSTALL (FILES ${API_ONLY_INCLUDE_FILES_INTERNAL} DESTINATION include/internal)
 
 # Enable testing
 
-# ENABLE_TESTING()
-# ADD_SUBDIRECTORY(serialization/tests)
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(openmmapi/tests)
 
 # Build the implementations for different platforms
 

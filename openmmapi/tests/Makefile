@@ -5,7 +5,7 @@ SOURCE_DIR=$(HOME_DIR)/Dropbox/temp_Linux/ANN_Force
 OpenMM_INSTALL_DIR=$(HOME_DIR)/.openmm/include
 PYTHON_PACKAGE_DIR=$(HOME_DIR)/.anaconda2/lib/python2.7/site-packages
 
-CFLAGS = -g -std=c++11 -Wall -Wextra -fsanitize=address
+CFLAGS = -g -std=c++11 -Wall -Wextra
 
 FCPPLIBS = -lstdc++
 
