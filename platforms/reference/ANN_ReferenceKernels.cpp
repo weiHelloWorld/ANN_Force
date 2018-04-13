@@ -394,9 +394,9 @@ void ReferenceCalcANN_ForceKernel::get_all_forces_from_derivative_of_first_layer
             std::vector<int>& pair_index = list_of_pair_index_for_distances[ii];
             RealVec diff_vec = positionData[pair_index[0]] - positionData[pair_index[1]];
             double temp_distance = sqrt(diff_vec.dot(diff_vec));
-            RealVec delta_F = diff_vec / (scaling_factor * temp_distance);
-            forceData[pair_index[0]] += delta_F;
-            forceData[pair_index[1]] -= delta_F;
+            RealVec delta_F = diff_vec * (derivatives_of_first_layer[ii] / (scaling_factor * temp_distance));
+            forceData[pair_index[0]] -= delta_F;
+            forceData[pair_index[1]] += delta_F;
         }
     }
     return;
