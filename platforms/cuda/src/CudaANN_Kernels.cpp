@@ -34,9 +34,13 @@
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/cuda/CudaBondedUtilities.h"
 #include "openmm/cuda/CudaForceInfo.h"
+#include <algorithm>
+#include <cstdio>
 
 using namespace OpenMM;
 using namespace std;
+// #define DEBUG_1
+#define DEBUG_CUDA
 
 class CudaANN_ForceInfo : public CudaForceInfo {   // TODO: what to do with this part?
 public:
@@ -76,15 +80,9 @@ CudaCalcANN_ForceKernel::~CudaCalcANN_ForceKernel() {
 void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& force) {
     cu.setAsCurrent();
     
-    data_type_in_input_layer = force.get_data_type_in_input_layer();
-    if (data_type_in_input_layer != 1) {
-        throw OpenMMException("not yet implemented for data_type_in_input_layer = " 
-            + std::to_string(data_type_in_input_layer) + "\n");
-    }
     if (NUM_OF_LAYERS != 3) {
         throw OpenMMException("not yet implemented for NUM_OF_LAYERS != " + std::to_string(NUM_OF_LAYERS) + "\n");
     }
-    
     // for writing cuda code: 
     // 1. store these parameters in device memory
     // 2. set up replacement text
@@ -92,8 +90,9 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     // num_of_nodes = CudaArray::create<int>(cu, NUM_OF_LAYERS, "num_of_nodes_cuda");
     // num_of_nodes -> upload(force.get_num_of_nodes());
-
+    
     int num_of_backbone_atoms = force.get_index_of_backbone_atoms().size();
+    int num_pair_index = force.get_list_of_pair_index_for_distances().size();
     int num_of_parallel_threads = 60;    // FIXME: there should be better way to determine this value
     vector<vector<int> > index_of_atoms_in_the_force(num_of_parallel_threads);
     for (int jj = 0; jj < num_of_parallel_threads; jj ++) {
@@ -101,12 +100,16 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
             index_of_atoms_in_the_force[jj][ii] -= 1;  // because in pdb file, index start with 1
         }
-    }
+    }   // why do we need to have 2D vector with all subvectors being exactly the same? 
+    // because each thread has to know what index list it is working on.  Since each thread has to work on the all given atoms
+    // so index list would be the same for all threads.  If the force can be decomposed into several independent parts with different indices
+    // then index list may be different for different threads. 
 
     // convert to CUDA array
     auto temp_num_of_nodes = force.get_num_of_nodes();
     num_of_nodes = convert_vector_to_CudaArray(force.get_num_of_nodes(), "1");
     index_of_backbone_atoms = convert_vector_to_CudaArray(force.get_index_of_backbone_atoms(), "3");
+    // list_of_pair_index_for_distances = convert_vector_to_CudaArray(force.get_list_of_pair_index_for_distances(), "3.5");
     {
         map<string, int> temp_replacement_layer_types;  // since string is not supported in CUDA kernel
         temp_replacement_layer_types["Linear"] = 0; temp_replacement_layer_types["Tanh"] = 1; temp_replacement_layer_types["Circular"] = 2; 
@@ -173,32 +176,82 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 
     // preprocessing for source code
     auto source_code_for_force_before_replacement = CudaANN_KernelSources::ANN_Force;
-    assert (force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
     stringstream temp_string;
     // temp_string << "int num_of_parallel_threads = " << num_of_parallel_threads << ";\n";
     // temp_string << "int num_of_rows, num_of_cols;\n";
     temp_string << "float force_constant = " << force.get_force_constant() << ";\n";
     
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string << "INPUT_0[" << (3 * ii + 0) << "] = pos" << (ii + 1) << ".x / " << force.get_scaling_factor() << ";\n";
-        temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
-        temp_string << "INPUT_0[" << (3 * ii + 2) << "] = pos" << (ii + 1) << ".z / " << force.get_scaling_factor() << ";\n";
+    data_type_in_input_layer = force.get_data_type_in_input_layer();
+    if (data_type_in_input_layer == 1) {
+        assert(force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+            temp_string << "INPUT_0[" << (3 * ii + 0) << "] = pos" << (ii + 1) << ".x / " << force.get_scaling_factor() << ";\n";
+            temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
+            temp_string << "INPUT_0[" << (3 * ii + 2) << "] = pos" << (ii + 1) << ".z / " << force.get_scaling_factor() << ";\n";
+        }
+        if (remove_translation_degrees_of_freedom) {
+            assert (num_of_parallel_threads >= 3);
+            temp_string << "float coor_center_of_mass = 0;\n";  // actually coor_center_of_mass is one component, each thread only needs to handle one component
+            temp_string << "if (index < 3) {\n";
+            temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
+            temp_string << "        coor_center_of_mass += INPUT_0[ii];\n";
+            temp_string << "    }\n";
+            temp_string << "    coor_center_of_mass /= " << num_of_backbone_atoms << ";\n";
+            temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
+            temp_string << "        INPUT_0[ii] -= coor_center_of_mass;\n";
+            temp_string << "    }\n";
+            temp_string << "}\n";
+            // temp_string << "__syncthreads();\n";
+        }
+        temp_string << "\n";
     }
-    if (remove_translation_degrees_of_freedom) {
-        assert (num_of_parallel_threads >= 3);
-        temp_string << "float coor_center_of_mass = 0;\n";  // actually coor_center_of_mass is one component, each thread only needs to handle one component
-        temp_string << "if (index < 3) {\n";
-        temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
-        temp_string << "        coor_center_of_mass += INPUT_0[ii];\n";
-        temp_string << "    }\n";
-        temp_string << "    coor_center_of_mass /= " << num_of_backbone_atoms << ";\n";
-        temp_string << "    for (int ii = index; ii < " << 3 * num_of_backbone_atoms << "; ii += 3) {\n";
-        temp_string << "        INPUT_0[ii] -= coor_center_of_mass;\n";
-        temp_string << "    }\n";
-        temp_string << "}\n";
-        // temp_string << "__syncthreads();\n";
+    else if (data_type_in_input_layer == 2) {
+        assert(force.get_list_of_pair_index_for_distances().size() == temp_num_of_nodes[0]);
+        // first need to convert absolute pair index into relative pair index for each thread
+        // note that in each thread only positions with certain index list are extracted
+        vector<int> temp_index_for_atoms = index_of_atoms_in_the_force[0];
+        std::sort(temp_index_for_atoms.begin(), temp_index_for_atoms.end());
+        for (int ii = 0; ii < temp_index_for_atoms.size() - 1; ii ++) {
+            assert (temp_index_for_atoms[ii] < temp_index_for_atoms[ii + 1]);
+        }
+        map<int, int> absolute_index_to_relative_index;
+        for (int ii = 0; ii < temp_index_for_atoms.size(); ii ++) {
+            absolute_index_to_relative_index[temp_index_for_atoms[ii]] = ii + 1; // since relative index starts with 1
+        }
+        auto relative_pair_index = force.get_list_of_pair_index_for_distances();
+        for (int ii = 0; ii < num_pair_index; ii ++) {
+            for (int jj = 0; jj < 2; jj ++) {
+                relative_pair_index[ii][jj] = absolute_index_to_relative_index[
+                    force.get_list_of_pair_index_for_distances()[ii][jj]];
+            }
+        }
+#ifdef DEBUG_1
+        cout << "before:\n";
+        for (auto item : force.get_list_of_pair_index_for_distances()) {
+            cout << item[0] << ", " << item[1] << "\t";
+        }
+        cout << "\nafter:\n";
+        for (auto item: relative_pair_index) {
+            cout << item[0] << ", " << item[1] << "\t";
+        }
+#endif
+        vector<string> subscripts({".x", ".y", ".z"});
+        for (int ii = 0; ii < relative_pair_index.size(); ii ++) {
+            temp_string << "real4 delta" << ii << "= pos" << relative_pair_index[ii][0]
+                        << "- pos" << relative_pair_index[ii][1] << ";\n"
+                        << "dis" << ii << "=";
+            // for (auto item_sub: subscripts) {
+                
+            // }
+        }
+        // real4 delta = pos2-pos1;
+        // energy += delta.x*delta.x + delta.y*delta.y + delta.z*delta.z;
+        // TODO
     }
-    temp_string << "\n"; 
+    else {
+        throw OpenMMException("not yet implemented for data_type_in_input_layer = " 
+            + std::to_string(data_type_in_input_layer) + "\n");
+    }
     temp_string << "__syncthreads();\n";
     temp_string << "// forward propagation\n";
     for (int ii = 0; ii < NUM_OF_LAYERS - 1; ii ++) {
@@ -250,37 +303,43 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     // source_code_for_force_before_replacement = temp_string + source_code_for_force_before_replacement;
 
     temp_string << "\n";
-    temp_string << "real3 average_deriv_on_input_layer = make_real3(0.0);\n";
-    if (remove_translation_degrees_of_freedom) {
-        temp_string << "for (int ii = 0; ii < " << num_of_backbone_atoms << "; ii ++ ) {\n";
-        temp_string << "    average_deriv_on_input_layer.x += INPUT_0[3 * ii + 0];\n";
-        temp_string << "    average_deriv_on_input_layer.y += INPUT_0[3 * ii + 1];\n";
-        temp_string << "    average_deriv_on_input_layer.z += INPUT_0[3 * ii + 2];\n";
+    if (data_type_in_input_layer == 1) {
+        temp_string << "real3 average_deriv_on_input_layer = make_real3(0.0);\n";
+        if (remove_translation_degrees_of_freedom) {
+            temp_string << "for (int ii = 0; ii < " << num_of_backbone_atoms << "; ii ++ ) {\n";
+            temp_string << "    average_deriv_on_input_layer.x += INPUT_0[3 * ii + 0];\n";
+            temp_string << "    average_deriv_on_input_layer.y += INPUT_0[3 * ii + 1];\n";
+            temp_string << "    average_deriv_on_input_layer.z += INPUT_0[3 * ii + 2];\n";
+            temp_string << "}\n";
+            temp_string << "average_deriv_on_input_layer = average_deriv_on_input_layer / " << num_of_backbone_atoms << ";\n";
+        }
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+            temp_string << "real3 force" << (ii + 1) << ";\n";
+        } 
+        temp_string << "\n";
+        temp_string << "if (index == 0) { \n";
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
+            temp_string << "    force" << (ii + 1) << " = make_real3( ";
+            temp_string << "- (INPUT_0[" << (3 * ii + 0) << "] - average_deriv_on_input_layer.x) / " << force.get_scaling_factor() << ", ";
+            temp_string << "- (INPUT_0[" << (3 * ii + 1) << "] - average_deriv_on_input_layer.y) / " << force.get_scaling_factor() << ", ";
+            temp_string << "- (INPUT_0[" << (3 * ii + 2) << "] - average_deriv_on_input_layer.z) / " << force.get_scaling_factor() << ") ;\n";
+        }
+        temp_string << "}\nelse { \n";
+        for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
+            temp_string << "    force" << (ii + 1) << " = make_real3(0.0);\n";
+        } 
         temp_string << "}\n";
-        temp_string << "average_deriv_on_input_layer = average_deriv_on_input_layer / " << num_of_backbone_atoms << ";\n";
     }
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string << "real3 force" << (ii + 1) << ";\n";
-    } 
-    temp_string << "\n";
-    temp_string << "if (index == 0) { \n";
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {  // only thread 0 calculate force, avoid repeated computation
-        temp_string << "    force" << (ii + 1) << " = make_real3( ";
-        temp_string << "- (INPUT_0[" << (3 * ii + 0) << "] - average_deriv_on_input_layer.x) / " << force.get_scaling_factor() << ", ";
-        temp_string << "- (INPUT_0[" << (3 * ii + 1) << "] - average_deriv_on_input_layer.y) / " << force.get_scaling_factor() << ", ";
-        temp_string << "- (INPUT_0[" << (3 * ii + 2) << "] - average_deriv_on_input_layer.z) / " << force.get_scaling_factor() << ") ;\n";
+    else if (data_type_in_input_layer == 2) {
+        // TODO
     }
-    temp_string << "}\nelse { \n";
-    for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
-        temp_string << "    force" << (ii + 1) << " = make_real3(0.0);\n";
-    } 
-    temp_string << "}\n";
+    
     source_code_for_force_before_replacement = temp_string.str();
     // source_code_for_force_before_replacement += temp_string;
     auto source_code_for_force_after_replacement = cu.replaceStrings(source_code_for_force_before_replacement, replacements);
 
     cu.getBondedUtilities().addInteraction(index_of_atoms_in_the_force, source_code_for_force_after_replacement , force.getForceGroup());
-#ifdef BUDEG_CUDA
+#ifdef DEBUG_CUDA
     cout << "before replacement:\n" << source_code_for_force_before_replacement << endl;
     // cout << "after replacement:\n" << source_code_for_force_after_replacement << endl; 
 #endif

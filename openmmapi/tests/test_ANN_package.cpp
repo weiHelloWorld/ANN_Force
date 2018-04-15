@@ -595,6 +595,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     }
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
+    forceField -> set_index_of_backbone_atoms({1,2,3,4});
     forceField -> set_num_of_nodes(vector<int>({6, 3, 3}));
     forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
     forceField -> set_list_of_pair_index_for_distances(vector<vector<int> >({{1,2},{1,3},{1,4},{2,3},{2,4},{3,4}}));
@@ -676,6 +677,7 @@ int main(int argc, char* argv[]) {
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("Reference");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("CUDA");
         for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
             test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
                 "Reference", num_of_atoms, 1);

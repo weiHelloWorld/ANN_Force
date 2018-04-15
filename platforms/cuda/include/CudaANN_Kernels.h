@@ -110,6 +110,7 @@ private:
     OpenMM::CudaArray* params;
     OpenMM::CudaArray* num_of_nodes;  // vector<int>
     OpenMM::CudaArray* index_of_backbone_atoms; // vector<int>
+    OpenMM::CudaArray* list_of_pair_index_for_distances;  // vector<vector<int> >
     OpenMM::CudaArray* layer_types; // vector<string>, should be converted to int array in CUDA kernel
     OpenMM::CudaArray* potential_center; // vector<double>
     OpenMM::CudaArray* force_constant;  // double, converted to vector<double> in kernel
