@@ -13,15 +13,12 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
-
-// #include "../../platforms/reference/ANN_ReferenceKernelFactory.cpp"
-
 using namespace OpenMM;
 using namespace std;
 
 const double TOL = 1e-5;
 const double FORCE_TOL = 5e-2;
-// #define PRINT_FORCE
+// #define PRINT_FORCE_1
 
 void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
     for (int ii = 0; ii < num_of_rows; ii ++) {
@@ -588,29 +585,107 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     return;
 }
 
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances(string temp_platform) {
+    cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances ";
+    cout << "(" << temp_platform << ")\n";
+    System system;
+    int num_of_atoms = 4;
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        system.addParticle(1.0);    
+    }
+    VerletIntegrator integrator(0.01);
+    ANN_Force* forceField = new ANN_Force();
+    forceField -> set_index_of_backbone_atoms({1,2,3,4});
+    forceField -> set_num_of_nodes(vector<int>({6, 3, 3}));
+    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
+    forceField -> set_list_of_pair_index_for_distances(vector<vector<int> >({{1,2},{1,3},{1,4},{2,3},{2,4},{3,4}}));
+    vector<vector<double> > coeff{{1,1,0,0,0,0,
+                                   0,0,1,1,0,0.7,
+                                   0,0,0,0,1,1
+                                    }, 
+                                  {1, 0, 0.4,
+                                   0, 1, 0,
+                                   0, 0, 1,
+                                    }};
+    forceField -> set_coeffients_of_connections(coeff);
+    forceField -> set_force_constant(10);
+    forceField -> set_scaling_factor(10);
+    forceField -> set_potential_center(vector<double>({0, 0, 0}));
+    forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3}, {0.5,0.6,0.4}});
+    forceField -> set_data_type_in_input_layer(2); // pairwise distances
+    system.addForce(forceField);
+    Platform& platform = Platform::getPlatformByName(temp_platform);
+    Context context(system, integrator, platform);
+    vector<Vec3> positions_1(num_of_atoms);
+    positions_1[0] = Vec3(-1, -2, -3);
+    positions_1[1] = Vec3(0, 0, 0);
+    positions_1[2] = Vec3(1, 0, 0);
+    positions_1[3] = Vec3(0, 0, 2);
+    context.setPositions(positions_1);
+
+    double energy_1, energy_2, energy_3;
+
+    vector<Vec3> forces;
+    vector<Vec3> temp_positions;
+
+    State state = context.getState(State::Forces | State::Energy | State::Positions);
+    {
+        forces = state.getForces();
+        energy_1 = state.getPotentialEnergy();
+        temp_positions = state.getPositions();
+#ifdef PRINT_FORCE_1
+        printf("forces:\n");
+        for (int ii = 0; ii < num_of_atoms; ii ++) {
+            print_Vec3(forces[ii]);
+        }
+#endif
+    }
+
+    double delta = 0.005;
+    auto positions_2 = positions_1;
+    auto numerical_derivatives = forces; // we need to compare this numerical result with the forces calculated
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        for (int jj = 0; jj < 3; jj ++) {
+            positions_2 = positions_1;
+            positions_2[ii][jj] += delta;
+            context.setPositions(positions_2);
+            energy_2 = context.getState(State::Energy | State::Positions).getPotentialEnergy();
+            numerical_derivatives[ii][jj] = (energy_2 - energy_1) / delta;
+        }
+    }
+    // print out numerical results
+#ifdef PRINT_FORCE
+    printf("numerical_derivatives = \n");
+    for (int ii = 0; ii < num_of_atoms; ii ++) {
+        print_Vec3(numerical_derivatives[ii]);
+    }
+#endif
+    assert_forces_equal_derivatives(forces, numerical_derivatives);
+    
+    return;
+}
+
 int main(int argc, char* argv[]) {
     try {
-        std::ifstream file_containing_location_of_plugin("directory_of_plugin.txt");
-        std::string directory_of_plugin;
-        std::getline(file_containing_location_of_plugin, directory_of_plugin);
-        cout << directory_of_plugin << endl;
-        OpenMM::Platform::loadPluginsFromDirectory(directory_of_plugin);
-        // test_forward_and_backward_prop();
-        // test_forward_and_backward_prop_2();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
-        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
-        // for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
-        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-        //         "Reference", num_of_atoms, 1);
-        //     test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-        //         "CUDA", num_of_atoms, 1);
-        // }
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
-                "CUDA", 500, 1);
+        OpenMM::Platform::loadPluginsFromDirectory("/home/kengyangyao/.openmm/lib/plugins");
+        test_forward_and_backward_prop();
+        test_forward_and_backward_prop_2();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("Reference");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("CUDA");
+        for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
+            test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+                "Reference", num_of_atoms, 1);
+            test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+                "CUDA", num_of_atoms, 1);
+        }
+        // test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
+        //         "CUDA", 500, 1);
         
     }
     catch(const exception& e) {

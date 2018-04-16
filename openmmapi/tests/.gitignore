@@ -1,7 +1,6 @@
 test_ANN_Force
 test_ANN_package
 *.pdb
-*.txt
 *.so
 *.o
 ANN_wrap.cxx

@@ -6,7 +6,6 @@
 using namespace OpenMM;
 
 
-
 const std::vector<int>& ANN_Force::get_num_of_nodes() const {
     return num_of_nodes;
 }
@@ -45,7 +44,10 @@ const std::vector<std::string>& ANN_Force::get_layer_types() const {
 }
 
 void ANN_Force::set_layer_types(std::vector<std::string>  temp_layer_types) {
-    layer_types = temp_layer_types;
+    for (int ii = 0; ii < temp_layer_types.size(); ii++) {
+        layer_types[ii] = temp_layer_types[ii];
+    }
+    // layer_types = temp_layer_types;
     return;
 }
 
@@ -53,8 +55,11 @@ const std::vector<std::vector<double> >& ANN_Force::get_values_of_biased_nodes()
     return values_of_biased_nodes;
 }
 
-void ANN_Force::set_values_of_biased_nodes(std::vector<std::vector<double> > bias) {
-    values_of_biased_nodes = bias;
+void ANN_Force::set_values_of_biased_nodes(std::vector<std::vector<double>> bias) {
+    for (int ii = 0; ii < bias.size(); ii++) {
+        values_of_biased_nodes[ii] = bias[ii];
+    }
+    // values_of_biased_nodes = bias;
     return;
 }
 
@@ -144,6 +149,22 @@ void ANN_Force::set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backb
     //     printf("\n");
     // }
 #endif
+    return;
+}
+
+const std::vector<std::vector<int> >& ANN_Force::get_list_of_pair_index_for_distances() const {
+    return list_of_pair_index_for_distances;
+}
+
+void ANN_Force::set_list_of_pair_index_for_distances(std::vector<std::vector<int> > temp_list_of_index) {
+    int num_pairs = temp_list_of_index.size();
+    for (int ii = 0; ii < num_pairs; ii ++) {
+        list_of_pair_index_for_distances.push_back(std::vector<int>());
+        for (int jj = 0; jj < 2; jj ++) {
+            list_of_pair_index_for_distances[ii].push_back(temp_list_of_index[ii][jj] - 1); 
+            // should "-1", because in PDB file, the index starts from 1
+        }
+    }
     return;
 }
 
