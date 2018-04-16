@@ -211,7 +211,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         // first need to convert absolute pair index into relative pair index for each thread
         // note that in each thread only positions with certain index list are extracted
         vector<int> temp_index_for_atoms = index_of_atoms_in_the_force[0];
-        std::sort(temp_index_for_atoms.begin(), temp_index_for_atoms.end());
+        std::sort(temp_index_for_atoms.begin(), temp_index_for_atoms.end()); // TODO: is sorting needed?  ref: https://github.com/pandegroup/openmm/blob/master/platforms/cuda/src/CudaBondedUtilities.cpp#L40
         for (int ii = 0; ii < temp_index_for_atoms.size() - 1; ii ++) {
             assert (temp_index_for_atoms[ii] < temp_index_for_atoms[ii + 1]);
         }
