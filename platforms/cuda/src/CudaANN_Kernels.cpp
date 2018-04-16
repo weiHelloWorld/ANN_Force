@@ -237,16 +237,19 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 #endif
         vector<string> subscripts({".x", ".y", ".z"});
         for (int ii = 0; ii < relative_pair_index.size(); ii ++) {
-            temp_string << "real4 delta" << ii << "= pos" << relative_pair_index[ii][0]
+            temp_string << "real4 delta" << ii << " = pos" << relative_pair_index[ii][0]
                         << "- pos" << relative_pair_index[ii][1] << ";\n"
-                        << "dis" << ii << "=";
-            // for (auto item_sub: subscripts) {
-                
-            // }
+                        << "float dis" << ii << " = sqrt(";
+            for (int jj = 0; jj < 3; jj ++) {
+                temp_string << "delta" << ii << subscripts[jj] << "*"
+                            << "delta" << ii << subscripts[jj];
+                if (jj < 2) { temp_string << "+"; } 
+                else {
+                    temp_string << ") / " << force.get_scaling_factor() << ";\n";
+                }
+            }
+            temp_string << "INPUT_0[" << ii << "] = dis" << ii << ";\n"; 
         }
-        // real4 delta = pos2-pos1;
-        // energy += delta.x*delta.x + delta.y*delta.y + delta.z*delta.z;
-        // TODO
     }
     else {
         throw OpenMMException("not yet implemented for data_type_in_input_layer = " 
