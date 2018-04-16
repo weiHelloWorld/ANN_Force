@@ -182,6 +182,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     temp_string << "float force_constant = " << force.get_force_constant() << ";\n";
     
     data_type_in_input_layer = force.get_data_type_in_input_layer();
+    auto relative_pair_index = force.get_list_of_pair_index_for_distances();
     if (data_type_in_input_layer == 1) {
         assert(force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
         for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
@@ -218,7 +219,6 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         for (int ii = 0; ii < temp_index_for_atoms.size(); ii ++) {
             absolute_index_to_relative_index[temp_index_for_atoms[ii]] = ii + 1; // since relative index starts with 1
         }
-        auto relative_pair_index = force.get_list_of_pair_index_for_distances();
         for (int ii = 0; ii < num_pair_index; ii ++) {
             for (int jj = 0; jj < 2; jj ++) {
                 relative_pair_index[ii][jj] = absolute_index_to_relative_index[
@@ -237,9 +237,11 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
 #endif
         vector<string> subscripts({".x", ".y", ".z"});
         for (int ii = 0; ii < relative_pair_index.size(); ii ++) {
-            temp_string << "real4 delta" << ii << " = pos" << relative_pair_index[ii][0]
+            temp_string << "real4 temp_delta" << ii << " = pos" << relative_pair_index[ii][0]
                         << "- pos" << relative_pair_index[ii][1] << ";\n"
-                        << "float dis" << ii << " = sqrt(";
+                        << "real3 delta" << ii << " = make_real3(temp_delta" << ii
+                        << ".x, temp_delta" << ii << ".y, temp_delta" << ii << ".z);\n" // convert to real3 from real4
+                        << "float dis" << ii << " = sqrt(";    
             for (int jj = 0; jj < 3; jj ++) {
                 temp_string << "delta" << ii << subscripts[jj] << "*"
                             << "delta" << ii << subscripts[jj];
@@ -334,6 +336,16 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         temp_string << "}\n";
     }
     else if (data_type_in_input_layer == 2) {
+        // temp_string << "inline __device__ real3 trim(real4 v) { return make_real3(v.x, v.y, v.z);}\n";
+        for (int ii = 0; ii < force.get_index_of_backbone_atoms().size(); ii++) {
+            temp_string << "real3 force" << (ii + 1) << " = make_real3(0.0);\n";
+        }
+        for (int ii = 0; ii < num_pair_index; ii ++) {
+            temp_string << "real3 delta_F" << ii << " = delta" << ii << " * (INPUT_0[" << ii << "] / ("
+                        << force.get_scaling_factor() << " * dis" << ii << "));\n"
+                        << "force" << relative_pair_index[ii][0] << " -= delta_F" << ii << ";\n"
+                        << "force" << relative_pair_index[ii][1] << " += delta_F" << ii << ";\n";
+        }
         // TODO
     }
     

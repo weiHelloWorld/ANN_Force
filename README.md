@@ -36,11 +36,14 @@ TODO: examples
 ## Testing
 
 ```bash
-root_dir=openmmapi/tests
-cd ${root_dir}
+mkdir build
+cd build
+ccmake ..
+make install
 echo "running tests for numerical calculations..."
-make test_ANN_package
-./test_ANN_package
+make test
+
+cd ../openmmapi/tests
 echo "running test for Python wrapper..."
 python test_Python_wrapper.py
 ```
