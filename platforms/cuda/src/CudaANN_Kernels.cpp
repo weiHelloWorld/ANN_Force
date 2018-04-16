@@ -40,7 +40,7 @@
 using namespace OpenMM;
 using namespace std;
 // #define DEBUG_1
-#define DEBUG_CUDA
+// #define DEBUG_CUDA
 
 class CudaANN_ForceInfo : public CudaForceInfo {   // TODO: what to do with this part?
 public:
@@ -340,12 +340,14 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         for (int ii = 0; ii < force.get_index_of_backbone_atoms().size(); ii++) {
             temp_string << "real3 force" << (ii + 1) << " = make_real3(0.0);\n";
         }
+        temp_string << "if (index == 0) { \n";
         for (int ii = 0; ii < num_pair_index; ii ++) {
             temp_string << "real3 delta_F" << ii << " = delta" << ii << " * (INPUT_0[" << ii << "] / ("
-                        << force.get_scaling_factor() << " * dis" << ii << "));\n"
+                        << force.get_scaling_factor() * force.get_scaling_factor() << " * dis" << ii << "));\n"
                         << "force" << relative_pair_index[ii][0] << " -= delta_F" << ii << ";\n"
                         << "force" << relative_pair_index[ii][1] << " += delta_F" << ii << ";\n";
         }
+        temp_string << "}\n";
         // TODO
     }
     

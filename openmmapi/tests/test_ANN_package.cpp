@@ -18,7 +18,7 @@ using namespace std;
 
 const double TOL = 1e-5;
 const double FORCE_TOL = 5e-2;
-// #define PRINT_FORCE
+// #define PRINT_FORCE_1
 
 void print_matrix(double** matrix, int num_of_rows, int num_of_cols) {
     for (int ii = 0; ii < num_of_rows; ii ++) {
@@ -609,7 +609,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
                                     }};
     forceField -> set_coeffients_of_connections(coeff);
     forceField -> set_force_constant(10);
-    forceField -> set_scaling_factor(1);
+    forceField -> set_scaling_factor(10);
     forceField -> set_potential_center(vector<double>({0, 0, 0}));
     forceField -> set_values_of_biased_nodes(vector<vector<double> > {{0.1,0.2,0.3}, {0.5,0.6,0.4}});
     forceField -> set_data_type_in_input_layer(2); // pairwise distances
@@ -633,7 +633,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
         forces = state.getForces();
         energy_1 = state.getPotentialEnergy();
         temp_positions = state.getPositions();
-#ifdef PRINT_FORCE
+#ifdef PRINT_FORCE_1
         printf("forces:\n");
         for (int ii = 0; ii < num_of_atoms; ii ++) {
             print_Vec3(forces[ii]);
