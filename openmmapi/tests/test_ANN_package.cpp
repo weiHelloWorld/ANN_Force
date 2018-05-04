@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
+#include <time.h>
 using namespace OpenMM;
 using namespace std;
 
@@ -512,6 +513,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     string temp_platform, int num_of_atoms, int seed) {
     cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system ";
     cout << "(platform = " << temp_platform << ", num_of_atoms = " << num_of_atoms << ")\n";
+    time_t start_timer, end_timer;
+    double runtime_seconds;
+    time(&start_timer);
     System system;
     vector<int> index_of_backbone_atoms(num_of_atoms);
     for (int ii = 0; ii < num_of_atoms; ii ++) {
@@ -582,6 +586,9 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     }
 #endif
     assert_forces_equal_derivatives(forces, numerical_derivatives);
+    time(&end_timer);
+    runtime_seconds = difftime(end_timer, start_timer);
+    printf("running time = %f\n", runtime_seconds);
     return;
 }
 
@@ -678,7 +685,7 @@ int main(int argc, char* argv[]) {
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("Reference");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("CUDA");
-        for (int num_of_atoms = 4; num_of_atoms < 30; num_of_atoms += 4) {
+        for (int num_of_atoms = 20; num_of_atoms < 200; num_of_atoms += 20) {
             test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
                 "Reference", num_of_atoms, 1);
             test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates_larger_system(
