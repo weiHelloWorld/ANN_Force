@@ -223,6 +223,15 @@ void ReferenceCalcANN_ForceKernel::calculate_output_of_each_layer(const vector<R
 #endif
             }
         }
+        else if (layer_types[ii - 1] == string("Softmax")) {
+            double temp_exp_sum = 0;
+            for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+                temp_exp_sum += exp(input_of_each_layer[ii][jj]);
+            }
+            for (int jj = 0; jj < num_of_nodes[ii]; jj ++) {
+                output_of_each_layer[ii][jj] = exp(input_of_each_layer[ii][jj]) / temp_exp_sum;
+            }
+        }
         else {
             printf("layer type not found!\n\n");
             return;
@@ -342,6 +351,17 @@ void ReferenceCalcANN_ForceKernel::back_prop(vector<vector<double> >& derivative
                         derivatives_of_each_layer[jj][mm] += derivatives_of_each_layer[jj + 1][kk] \
                                     * coeff[jj][kk][mm] \
                                     * 1;
+                    }
+                    else if (layer_types[jj] == string("Softmax")) {
+                        double temp_derivative_wrt_input_component = 0;
+                        for (int ss = 0; ss < num_of_nodes[jj + 1]; ss ++) {
+                            temp_derivative_wrt_input_component += (-output_of_each_layer[jj + 1][kk] \
+                                * output_of_each_layer[jj + 1][ss] * derivatives_of_each_layer[jj + 1][ss]);
+                            if (kk == ss) {
+                                temp_derivative_wrt_input_component += (output_of_each_layer[jj + 1][ss] * derivatives_of_each_layer[jj + 1][ss]);
+                            }
+                        }
+                        derivatives_of_each_layer[jj][mm] += coeff[jj][kk][mm] * temp_derivative_wrt_input_component;
                     }
                     else {
                         printf("layer type not found!\n\n");

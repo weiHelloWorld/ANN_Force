@@ -419,7 +419,8 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alan
     return;
 }
 
-void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates(string temp_platform) {
+void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates(
+        string temp_platform, string last_activation) {
     cout << "running test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates ";
     cout << "(" << temp_platform << ")\n";
     System system;
@@ -430,7 +431,7 @@ void test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_inpu
     VerletIntegrator integrator(0.01);
     ANN_Force* forceField = new ANN_Force();
     forceField -> set_num_of_nodes(vector<int>({12, 4, 4}));
-    forceField -> set_layer_types(vector<string>({"Tanh", "Tanh"}));
+    forceField -> set_layer_types(vector<string>({"Tanh", last_activation}));
     vector<vector<double> > coeff{{1,1,1,0,0,0,0,0,0,0,0,0,
                                    0,0,0,1,1,1,0,0,0,0,0,0,
                                    0,0,0,0,0,0,1,1,1,0,0,0,
@@ -681,8 +682,8 @@ int main(int argc, char* argv[]) {
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({0, 0}));
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_circular_layer(vector<double>({2.4, 2.3}));
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_alanine_dipeptide();
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference");
-        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("Reference", "Softmax");
+        test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_Cartesian_coordinates("CUDA", "Tanh");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("Reference");
         test_calculation_of_forces_by_comparing_with_numerical_derivatives_for_input_as_pairwise_distances("CUDA");
         for (int num_of_atoms = 20; num_of_atoms < 200; num_of_atoms += 20) {
