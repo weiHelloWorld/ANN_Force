@@ -86,5 +86,9 @@ public:
     
     void set_list_of_index_of_atoms_forming_dihedrals_from_index_of_backbone_atoms(std::vector<int> index_of_backbone_atoms);
 
+    const std::vector<std::vector<int> >& get_list_of_pair_index_for_distances() const;
+
+    void set_list_of_pair_index_for_distances(std::vector<std::vector<int> > temp_list_of_index);   
+
 };
 
