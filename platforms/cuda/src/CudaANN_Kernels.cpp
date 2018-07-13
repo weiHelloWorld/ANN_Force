@@ -32,6 +32,7 @@
 #include "CudaANN_Kernels.h"
 #include "CudaANN_KernelSources.h"
 #include "openmm/internal/ContextImpl.h"
+#include "openmm/internal/AssertionUtilities.h"
 #include "openmm/cuda/CudaBondedUtilities.h"
 #include "openmm/cuda/CudaForceInfo.h"
 #include <algorithm>
@@ -184,7 +185,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
     data_type_in_input_layer = force.get_data_type_in_input_layer();
     auto relative_pair_index = force.get_list_of_pair_index_for_distances();
     if (data_type_in_input_layer == 1) {
-        assert(force.get_index_of_backbone_atoms().size() * 3 == temp_num_of_nodes[0]);
+        ASSERT_EQUAL(force.get_index_of_backbone_atoms().size() * 3, temp_num_of_nodes[0]);
         for (int ii = 0; ii < num_of_backbone_atoms; ii ++) {
             temp_string << "INPUT_0[" << (3 * ii + 0) << "] = pos" << (ii + 1) << ".x / " << force.get_scaling_factor() << ";\n";
             temp_string << "INPUT_0[" << (3 * ii + 1) << "] = pos" << (ii + 1) << ".y / " << force.get_scaling_factor() << ";\n";
@@ -207,7 +208,7 @@ void CudaCalcANN_ForceKernel::initialize(const System& system, const ANN_Force& 
         temp_string << "\n";
     }
     else if (data_type_in_input_layer == 2) {
-        assert(force.get_list_of_pair_index_for_distances().size() == temp_num_of_nodes[0]);
+        ASSERT_EQUAL(force.get_list_of_pair_index_for_distances().size(), temp_num_of_nodes[0]);
         // first need to convert absolute pair index into relative pair index for each thread
         // note that in each thread only positions with certain index list are extracted
         vector<int> temp_index_for_atoms = index_of_atoms_in_the_force[0];
